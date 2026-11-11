@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espas Afilye - OGSUNENTERPRISE</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView" class="login-wrap">
+  <div class="login-card">
+    <h2>Espas Afilye</h2>
+    <p class="sub">Konekte ak kont ou</p>
+    <div id="loginAlert" class="alert"></div>
+    <form id="affLoginForm">
+      <div class="field">
+        <label for="loginEmail">Imèl</label>
+        <input type="email" id="loginEmail" required>
+      </div>
+      <div class="field">
+        <label for="loginPass">Modpas</label>
+        <input type="password" id="loginPass" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Konekte</button>
+      <p class="text-center mt-3 text-muted" style="font-size: 0.85rem;">
+        Pa gen kont? <a href="/#affiliate">Enskri</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="appView" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="logo">OGSUN Afilye</div>
+    <nav>
+      <a href="#" data-tab="portfolio" class="active">Pòtfolyo</a>
+      <a href="#" data-tab="notifications">Notifikasyon</a>
+      <a href="#" data-tab="tasks">Travay</a>
+      <a href="#" id="logoutBtn" style="margin-top: 24px;">Dekonekte</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div id="globalAlert" class="alert"></div>
+
+    <div id="tab-portfolio" class="tab-panel active">
+      <h2 class="mb-3">Pòtfolyo Mwen</h2>
+      <div class="stats-grid" id="stats"></div>
+
+      <h3 class="mb-2 mt-3">Kliyan Mwen Yo</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dat</th><th>Kliyan</th><th>Sèvis</th><th>Montan</th><th>Komisyon</th><th>Estati</th></tr></thead>
+          <tbody id="custBody"><tr><td colspan="6" class="text-muted text-center">Chaje...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-notifications" class="tab-panel">
+      <h2 class="mb-3">Notifikasyon</h2>
+      <div id="notifList"></div>
+    </div>
+
+    <div id="tab-tasks" class="tab-panel">
+      <h2 class="mb-3">Travay Mwen</h2>
+      <div class="card mb-3">
+        <form id="taskForm" style="display: flex; gap: 8px;">
+          <input type="text" id="taskInput" placeholder="Ekri yon travay (egz. Fè pwomosyon OGCARS jodi a)" style="flex: 1;" required>
+          <button type="submit" class="btn btn-primary">Ajoute</button>
+        </form>
+      </div>
+      <div id="taskList"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+function alertGlobal(msg, type='success') {
+  const el = $('#globalAlert');
+  el.className = 'alert show alert-' + type;
+  el.textContent = msg;
+  setTimeout(() => el.className = 'alert', 5000);
+}
+
+async function api(url, opts={}) {
+  const r = await fetch(url, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(opts.headers||{}) },
+    ...opts
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || 'Erè ' + r.status);
+  return data;
+}
+
+$('#affLoginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await api('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: $('#loginEmail').value, password: $('#loginPass').value })
+    });
+    showApp();
+  } catch (err) {
+    const el = $('#loginAlert');
+    el.className = 'alert show alert-error';
+    el.textContent = err.message;
+  }
+});
+
+async function showApp() {
+  $('#loginView').classList.add('hidden');
+  $('#appView').classList.remove('hidden');
+  await Promise.all([loadPortfolio(), loadNotifications(), loadTasks()]);
+}
+
+async function checkAuth() {
+  try {
+    const me = await api('/api/auth/me');
+    if (me.role === 'affiliate') showApp();
+  } catch {}
+}
+checkAuth();
+
+$$('.sidebar nav a[data-tab]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const tab = a.dataset.tab;
+    $$('.sidebar nav a[data-tab]').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    $$('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+  });
+});
+
+$('#logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await api('/api/auth/logout', { method: 'POST' });
+  location.reload();
+});
+
+// ============ PÒTFOLYO ============
+async function loadPortfolio() {
+  try {
+    const d = await api('/api/affiliate/portfolio');
+    $('#stats').innerHTML = `
+      <div class="stat"><div class="label">Vant Total</div><div class="value">${Number(d.stats.total_sales).toFixed(2)} HTG</div></div>
+      <div class="stat"><div class="label">Komisyon Total</div><div class="value">${Number(d.stats.total_commission).toFixed(2)} HTG</div></div>
+      <div class="stat"><div class="label">Komisyon Peye</div><div class="value">${Number(d.stats.paid_commission).toFixed(2)} HTG</div></div>
+      <div class="stat"><div class="label">Kliyan</div><div class="value">${d.stats.sales_count}</div></div>
+    `;
+    const body = $('#custBody');
+    body.innerHTML = d.customers.length ? d.customers.map(c => `
+      <tr>
+        <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
+        <td>${esc(c.customer_name)}</td>
+        <td>${esc(c.service)}</td>
+        <td>${Number(c.amount).toFixed(2)} HTG</td>
+        <td>${Number(c.commission).toFixed(2)} HTG</td>
+        <td><span class="badge badge-${c.status === 'paid' ? 'paid' : 'pending'}">${c.status}</span></td>
+      </tr>
+    `).join('') : '<tr><td colspan="6" class="text-muted text-center">Poko gen vant</td></tr>';
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+// ============ NOTIFIKASYON ============
+async function loadNotifications() {
+  try {
+    const list = await api('/api/affiliate/notifications');
+    const el = $('#notifList');
+    el.innerHTML = list.length ? list.map(n => `
+      <div class="card mb-2" onclick="markRead(${n.id})" style="cursor: pointer; ${n.is_read ? 'opacity:0.6' : ''}">
+        <div class="flex-between">
+          <div>${esc(n.message)}</div>
+          <div class="text-muted" style="font-size: 0.8rem;">${new Date(n.created_at).toLocaleDateString('fr-FR')}</div>
+        </div>
+      </div>
+    `).join('') : '<p class="text-muted">Pa gen notifikasyon</p>';
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+async function markRead(id) {
+  try {
+    await api('/api/affiliate/notifications/' + id + '/read', { method: 'PATCH' });
+    loadNotifications();
+  } catch {}
+}
+
+// ============ TASKS ============
+$('#taskForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await api('/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify({ description: $('#taskInput').value })
+    });
+    $('#taskInput').value = '';
+    loadTasks();
+  } catch (err) { alertGlobal(err.message, 'error'); }
+});
+
+async function loadTasks() {
+  try {
+    const list = await api('/api/tasks');
+    const el = $('#taskList');
+    el.innerHTML = list.length ? list.map(t => `
+      <div class="card mb-2 flex-between">
+        <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+          <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id}, this.checked)" style="width: 20px; height: 20px; flex-shrink: 0;">
+          <div style="${t.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${esc(t.description)}</div>
+        </div>
+        <button class="btn btn-sm btn-ghost" onclick="deleteTask(${t.id})">Efase</button>
+      </div>
+    `).join('') : '<p class="text-muted">Pa gen travay</p>';
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+async function toggleTask(id, completed) {
+  try {
+    await api('/api/tasks/' + id, { method: 'PATCH', body: JSON.stringify({ completed }) });
+    loadTasks();
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+async function deleteTask(id) {
+  try {
+    await api('/api/tasks/' + id, { method: 'DELETE' });
+    loadTasks();
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+</script>
+</body>
+</html>

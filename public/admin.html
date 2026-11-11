@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - OGSUNENTERPRISE</title>
+<link rel="stylesheet" href="/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView" class="login-wrap">
+  <div class="login-card">
+    <h2>Admin Login</h2>
+    <p class="sub">OGSUNENTERPRISE Panel</p>
+    <div id="loginAlert" class="alert"></div>
+    <form id="adminLoginForm">
+      <div class="field">
+        <label for="adminPass">Modpas Admin</label>
+        <input type="password" id="adminPass" required autofocus>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Konekte</button>
+    </form>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="appView" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="logo">OGSUN Admin</div>
+    <nav>
+      <a href="#" data-tab="affiliates" class="active">Afilye</a>
+      <a href="#" data-tab="economy">Ekonomi</a>
+      <a href="#" data-tab="customers">Kliyan</a>
+      <a href="#" data-tab="notifications">Notifikasyon</a>
+      <a href="#" data-tab="analytics">Analytik</a>
+      <a href="#" id="logoutBtn" style="margin-top: 24px;">Dekonekte</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div id="globalAlert" class="alert"></div>
+
+    <!-- AFILYE -->
+    <div id="tab-affiliates" class="tab-panel active">
+      <h2 class="mb-3">Jesyon Afilye</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Non</th><th>Imèl</th><th>Telefòn</th><th>Sèvis</th><th>Estati</th><th>Aksyon</th></tr></thead>
+          <tbody id="affiliatesBody"><tr><td colspan="6" class="text-muted text-center">Chaje...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EKONOMI -->
+    <div id="tab-economy" class="tab-panel">
+      <h2 class="mb-3">Ekonomi - Vant</h2>
+      <div class="card mb-3">
+        <h3 class="mb-2">Ajoute yon Vant</h3>
+        <form id="saleForm">
+          <div class="field">
+            <label>Afilye</label>
+            <select id="saleAffiliate" required></select>
+          </div>
+          <div class="field">
+            <label>Non Kliyan</label>
+            <input type="text" id="saleCustomer" required>
+          </div>
+          <div class="field">
+            <label>Montan (HTG)</label>
+            <input type="number" id="saleAmount" min="0.01" step="0.01" required>
+          </div>
+          <div class="field">
+            <label>Sèvis</label>
+            <select id="saleService" required>
+              <option value="Shop Online">Shop Online</option>
+              <option value="Order Food">Order Food</option>
+              <option value="OGCARS">OGCARS</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Anrejistre Vant (+10% komisyon)</button>
+        </form>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dat</th><th>Afilye</th><th>Kliyan</th><th>Sèvis</th><th>Montan</th><th>Komisyon</th><th>Estati</th><th>Aksyon</th></tr></thead>
+          <tbody id="salesBody"><tr><td colspan="8" class="text-muted text-center">Chaje...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- KLIYAN -->
+    <div id="tab-customers" class="tab-panel">
+      <h2 class="mb-3">Kliyan yo</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Kliyan</th><th>Sèvis</th><th>Montan</th><th>Afilye</th><th>Dat</th></tr></thead>
+          <tbody id="customersBody"><tr><td colspan="5" class="text-muted text-center">Chaje...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NOTIFIKASYON -->
+    <div id="tab-notifications" class="tab-panel">
+      <h2 class="mb-3">Voye Notifikasyon</h2>
+      <div class="card mb-3">
+        <form id="notifForm">
+          <div class="field">
+            <label>Destinatè</label>
+            <select id="notifTarget">
+              <option value="all">Tout moun</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Mesaj</label>
+            <textarea id="notifMessage" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Voye</button>
+        </form>
+      </div>
+      <h3 class="mb-2">Istwa Notifikasyon</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dat</th><th>Afilye</th><th>Mesaj</th></tr></thead>
+          <tbody id="notifsBody"><tr><td colspan="3" class="text-muted text-center">Chaje...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ANALYTIK -->
+    <div id="tab-analytics" class="tab-panel">
+      <h2 class="mb-3">Analytik</h2>
+      <div class="stats-grid" id="analyticsStats"></div>
+      <div class="card">
+        <h3 class="mb-2">Vant pa Mwa</h3>
+        <canvas id="salesChart" style="max-height: 360px;"></canvas>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+function alertGlobal(msg, type='success') {
+  const el = $('#globalAlert');
+  el.className = 'alert show alert-' + type;
+  el.textContent = msg;
+  setTimeout(() => el.className = 'alert', 5000);
+}
+
+async function api(url, opts={}) {
+  const r = await fetch(url, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(opts.headers||{}) },
+    ...opts
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || 'Erè ' + r.status);
+  return data;
+}
+
+// ============ LOGIN ============
+$('#adminLoginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pass = $('#adminPass').value;
+  try {
+    await api('/api/auth/admin-login', { method: 'POST', body: JSON.stringify({ password: pass }) });
+    showApp();
+  } catch (err) {
+    const el = $('#loginAlert');
+    el.className = 'alert show alert-error';
+    el.textContent = err.message;
+  }
+});
+
+async function showApp() {
+  $('#loginView').classList.add('hidden');
+  $('#appView').classList.remove('hidden');
+  await Promise.all([loadAffiliates(), loadSales(), loadCustomers(), loadNotifs(), loadAnalytics()]);
+}
+
+async function checkAuth() {
+  try {
+    const me = await api('/api/auth/me');
+    if (me.role === 'admin') showApp();
+  } catch {}
+}
+checkAuth();
+
+// ============ TABS ============
+$$('.sidebar nav a[data-tab]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const tab = a.dataset.tab;
+    $$('.sidebar nav a[data-tab]').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    $$('.tab-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('tab-' + tab);
+    if (panel) panel.classList.add('active');
+  });
+});
+
+$('#logoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await api('/api/auth/logout', { method: 'POST' });
+  location.reload();
+});
+
+// ============ AFILYE ============
+async function loadAffiliates() {
+  try {
+    const list = await api('/api/admin/affiliates');
+    const body = $('#affiliatesBody');
+    const opts = $('#saleAffiliate');
+    const notifOpts = $('#notifTarget');
+    body.innerHTML = list.length ? list.map(a => `
+      <tr>
+        <td>${esc(a.name)}</td>
+        <td>${esc(a.email)}</td>
+        <td>${esc(a.phone)}</td>
+        <td>${esc(a.service)}</td>
+        <td><span class="badge badge-${a.status}">${a.status}</span></td>
+        <td>
+          ${a.status !== 'active' ? `<button class="btn btn-sm btn-success" onclick="setStatus(${a.id},'active')">Aktive</button>` : ''}
+          ${a.status !== 'suspended' ? `<button class="btn btn-sm btn-danger" onclick="setStatus(${a.id},'suspended')">Sispann</button>` : ''}
+        </td>
+      </tr>
+    `).join('') : '<tr><td colspan="6" class="text-muted text-center">Pa gen afilye</td></tr>';
+
+    opts.innerHTML = '<option value="">-- Chwazi --</option>' +
+      list.map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.email)})</option>`).join('');
+    notifOpts.innerHTML = '<option value="all">Tout moun</option>' +
+      list.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+async function setStatus(id, status) {
+  try {
+    await api('/api/admin/affiliates/' + id + '/status', {
+      method: 'PATCH', body: JSON.stringify({ status })
+    });
+    alertGlobal('Estati mete ajou');
+    loadAffiliates();
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+// ============ VANT ============
+$('#saleForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await api('/api/admin/sales', {
+      method: 'POST',
+      body: JSON.stringify({
+        affiliate_id: parseInt($('#saleAffiliate').value),
+        customer_name: $('#saleCustomer').value,
+        amount: parseFloat($('#saleAmount').value),
+        service: $('#saleService').value
+      })
+    });
+    alertGlobal('Vant anrejistre');
+    e.target.reset();
+    loadSales(); loadCustomers(); loadAnalytics();
+  } catch (err) { alertGlobal(err.message, 'error'); }
+});
+
+async function loadSales() {
+  try {
+    const list = await api('/api/admin/sales');
+    const body = $('#salesBody');
+    body.innerHTML = list.length ? list.map(s => `
+      <tr>
+        <td>${new Date(s.created_at).toLocaleDateString('fr-FR')}</td>
+        <td>${esc(s.affiliate_name)}</td>
+        <td>${esc(s.customer_name)}</td>
+        <td>${esc(s.service)}</td>
+        <td>${Number(s.amount).toFixed(2)} HTG</td>
+        <td>${Number(s.commission).toFixed(2)} HTG</td>
+        <td><span class="badge badge-${s.status === 'paid' ? 'paid' : 'pending'}">${s.status}</span></td>
+        <td>${s.status !== 'paid' ? `<button class="btn btn-sm btn-success" onclick="markPaid(${s.id})">Make Paid</button>` : ''}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="8" class="text-muted text-center">Pa gen vant</td></tr>';
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+async function markPaid(id) {
+  try {
+    await api('/api/admin/sales/' + id + '/status', {
+      method: 'PATCH', body: JSON.stringify({ status: 'paid' })
+    });
+    alertGlobal('Vant make paid');
+    loadSales();
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+// ============ KLIYAN ============
+async function loadCustomers() {
+  try {
+    const list = await api('/api/admin/customers');
+    const body = $('#customersBody');
+    body.innerHTML = list.length ? list.map(c => `
+      <tr>
+        <td>${esc(c.customer_name)}</td>
+        <td>${esc(c.service)}</td>
+        <td>${Number(c.amount).toFixed(2)} HTG</td>
+        <td>${esc(c.affiliate_name)}</td>
+        <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="5" class="text-muted text-center">Pa gen kliyan</td></tr>';
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+// ============ NOTIF ============
+$('#notifForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const target = $('#notifTarget').value;
+  try {
+    const res = await api('/api/admin/notifications', {
+      method: 'POST',
+      body: JSON.stringify({
+        affiliate_id: target === 'all' ? 'all' : parseInt(target),
+        message: $('#notifMessage').value
+      })
+    });
+    alertGlobal('Voye (' + res.count + ')');
+    e.target.reset();
+    loadNotifs();
+  } catch (err) { alertGlobal(err.message, 'error'); }
+});
+
+async function loadNotifs() {
+  try {
+    const list = await api('/api/admin/notifications');
+    const body = $('#notifsBody');
+    body.innerHTML = list.length ? list.map(n => `
+      <tr>
+        <td>${new Date(n.created_at).toLocaleString('fr-FR')}</td>
+        <td>${esc(n.affiliate_name)}</td>
+        <td>${esc(n.message)}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="3" class="text-muted text-center">Pa gen notifikasyon</td></tr>';
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+// ============ ANALYTIK ============
+let chart = null;
+async function loadAnalytics() {
+  try {
+    const data = await api('/api/admin/analytics');
+    $('#analyticsStats').innerHTML = `
+      <div class="stat"><div class="label">Revni Total</div><div class="value">${Number(data.totals.revenue).toFixed(2)} HTG</div></div>
+      <div class="stat"><div class="label">Komisyon Total</div><div class="value">${Number(data.totals.commission).toFixed(2)} HTG</div></div>
+      <div class="stat"><div class="label">Vant</div><div class="value">${data.totals.sales_count}</div></div>
+      <div class="stat"><div class="label">Afilye Aktif</div><div class="value">${data.counts.active_affiliates}/${data.counts.affiliates}</div></div>
+    `;
+
+    const labels = data.monthly.map(m => m.month);
+    const vals = data.monthly.map(m => Number(m.total_sales));
+
+    const ctx = $('#salesChart');
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Vant (HTG)',
+          data: vals,
+          backgroundColor: 'rgba(255,184,0,0.7)',
+          borderColor: '#FFB800',
+          borderWidth: 1,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#f2f2f5' } }
+        },
+        scales: {
+          x: { ticks: { color: '#9a9aa5' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { ticks: { color: '#9a9aa5' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+      }
+    });
+  } catch (e) { alertGlobal(e.message, 'error'); }
+}
+
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+</script>
+</body>
+</html>
