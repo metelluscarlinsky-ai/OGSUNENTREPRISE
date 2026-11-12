@@ -12,39 +12,50 @@
 <!-- LOGIN -->
 <div id="loginView" class="login-wrap">
   <div class="login-card">
-    <h2>Admin Login</h2>
-    <p class="sub">OGSUNENTERPRISE Panel</p>
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div class="logo" style="font-size: 1.5rem;">OGSUN<span style="color:white">ENTERPRISE</span></div>
+      <p class="text-muted" style="font-size: 0.9rem; margin-top: 8px;">Panel Administrasyon</p>
+    </div>
     <div id="loginAlert" class="alert"></div>
     <form id="adminLoginForm">
       <div class="field">
         <label for="adminPass">Modpas Admin</label>
-        <input type="password" id="adminPass" required autofocus>
+        <input type="password" id="adminPass" required autofocus placeholder="Antre modpas la...">
       </div>
-      <button type="submit" class="btn btn-primary" style="width: 100%;">Konekte</button>
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Konekte</button>
     </form>
   </div>
 </div>
 
-<!-- DASHBOARD -->
+<!-- APP DASHBOARD -->
 <div id="appView" class="app-shell hidden">
+  
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="logo">OGSUN Admin</div>
+    <div class="brand">OGSUN <span>Admin</span></div>
     <nav>
-      <a href="#" data-tab="affiliates" class="active">Afilye</a>
-      <a href="#" data-tab="economy">Ekonomi</a>
-      <a href="#" data-tab="customers">Kliyan</a>
-      <a href="#" data-tab="notifications">Notifikasyon</a>
-      <a href="#" data-tab="analytics">Analytik</a>
-      <a href="#" id="logoutBtn" style="margin-top: 24px;">Dekonekte</a>
+      <a href="#" data-tab="affiliates" class="active">👥 Afilye</a>
+      <a href="#" data-tab="economy">💰 Ekonomi</a>
+      <a href="#" data-tab="customers">🛍️ Kliyan</a>
+      <a href="#" data-tab="notifications">🔔 Notifikasyon</a>
+      <a href="#" data-tab="analytics">📊 Analytik</a>
+      <a href="#" id="logoutBtn" class="logout">🚪 Dekonekte</a>
     </nav>
   </aside>
 
+  <!-- MAIN CONTENT -->
   <main class="main-content">
+    <div class="top-bar">
+      <h1 id="pageTitle">Jesyon Afilye</h1>
+      <div class="admin-profile">
+        <span class="dot"></span> Admin
+      </div>
+    </div>
+
     <div id="globalAlert" class="alert"></div>
 
     <!-- AFILYE -->
     <div id="tab-affiliates" class="tab-panel active">
-      <h2 class="mb-3">Jesyon Afilye</h2>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Non</th><th>Imèl</th><th>Telefòn</th><th>Sèvis</th><th>Estati</th><th>Aksyon</th></tr></thead>
@@ -55,21 +66,20 @@
 
     <!-- EKONOMI -->
     <div id="tab-economy" class="tab-panel">
-      <h2 class="mb-3">Ekonomi - Vant</h2>
-      <div class="card mb-3">
-        <h3 class="mb-2">Ajoute yon Vant</h3>
-        <form id="saleForm">
+      <div class="card">
+        <h3 class="mb-3">Ajoute yon Vant</h3>
+        <form id="saleForm" class="sale-form-grid">
           <div class="field">
             <label>Afilye</label>
             <select id="saleAffiliate" required></select>
           </div>
           <div class="field">
             <label>Non Kliyan</label>
-            <input type="text" id="saleCustomer" required>
+            <input type="text" id="saleCustomer" required placeholder="Non kliyan an...">
           </div>
           <div class="field">
             <label>Montan (HTG)</label>
-            <input type="number" id="saleAmount" min="0.01" step="0.01" required>
+            <input type="number" id="saleAmount" min="0.01" step="0.01" required placeholder="0.00">
           </div>
           <div class="field">
             <label>Sèvis</label>
@@ -79,9 +89,12 @@
               <option value="OGCARS">OGCARS</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-primary">Anrejistre Vant (+10% komisyon)</button>
+          <div class="full">
+            <button type="submit" class="btn btn-primary">Anrejistre Vant (+10% komisyon)</button>
+          </div>
         </form>
       </div>
+
       <div class="table-wrap">
         <table>
           <thead><tr><th>Dat</th><th>Afilye</th><th>Kliyan</th><th>Sèvis</th><th>Montan</th><th>Komisyon</th><th>Estati</th><th>Aksyon</th></tr></thead>
@@ -92,7 +105,6 @@
 
     <!-- KLIYAN -->
     <div id="tab-customers" class="tab-panel">
-      <h2 class="mb-3">Kliyan yo</h2>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Kliyan</th><th>Sèvis</th><th>Montan</th><th>Afilye</th><th>Dat</th></tr></thead>
@@ -103,8 +115,8 @@
 
     <!-- NOTIFIKASYON -->
     <div id="tab-notifications" class="tab-panel">
-      <h2 class="mb-3">Voye Notifikasyon</h2>
       <div class="card mb-3">
+        <h3 class="mb-3">Voye Notifikasyon</h3>
         <form id="notifForm">
           <div class="field">
             <label>Destinatè</label>
@@ -114,11 +126,12 @@
           </div>
           <div class="field">
             <label>Mesaj</label>
-            <textarea id="notifMessage" required></textarea>
+            <textarea id="notifMessage" required placeholder="Ekri mesaj ou vle voye a..."></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Voye</button>
+          <button type="submit" class="btn btn-primary">Voye Mesaj la</button>
         </form>
       </div>
+      
       <h3 class="mb-2">Istwa Notifikasyon</h3>
       <div class="table-wrap">
         <table>
@@ -130,13 +143,15 @@
 
     <!-- ANALYTIK -->
     <div id="tab-analytics" class="tab-panel">
-      <h2 class="mb-3">Analytik</h2>
       <div class="stats-grid" id="analyticsStats"></div>
       <div class="card">
-        <h3 class="mb-2">Vant pa Mwa</h3>
-        <canvas id="salesChart" style="max-height: 360px;"></canvas>
+        <h3 class="mb-3">Vant pa Mwa</h3>
+        <div style="position: relative; height: 350px; width: 100%;">
+          <canvas id="salesChart"></canvas>
+        </div>
       </div>
     </div>
+
   </main>
 </div>
 
@@ -191,15 +206,26 @@ async function checkAuth() {
 checkAuth();
 
 // ============ TABS ============
+const pageTitles = {
+  affiliates: 'Jesyon Afilye',
+  economy: 'Ekonomi ak Vant',
+  customers: 'Lis Kliyan yo',
+  notifications: 'Notifikasyon',
+  analytics: 'Analytik ak Rapò'
+};
+
 $$('.sidebar nav a[data-tab]').forEach(a => {
   a.addEventListener('click', (e) => {
     e.preventDefault();
     const tab = a.dataset.tab;
     $$('.sidebar nav a[data-tab]').forEach(x => x.classList.remove('active'));
     a.classList.add('active');
+    
+    // Chanje tit paj la
+    $('#pageTitle').textContent = pageTitles[tab] || 'Dashboard';
+    
     $$('.tab-panel').forEach(p => p.classList.remove('active'));
-    const panel = document.getElementById('tab-' + tab);
-    if (panel) panel.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
   });
 });
 
@@ -216,21 +242,24 @@ async function loadAffiliates() {
     const body = $('#affiliatesBody');
     const opts = $('#saleAffiliate');
     const notifOpts = $('#notifTarget');
+    
     body.innerHTML = list.length ? list.map(a => `
       <tr>
-        <td>${esc(a.name)}</td>
+        <td><strong>${esc(a.name)}</strong></td>
         <td>${esc(a.email)}</td>
         <td>${esc(a.phone)}</td>
         <td>${esc(a.service)}</td>
         <td><span class="badge badge-${a.status}">${a.status}</span></td>
         <td>
-          ${a.status !== 'active' ? `<button class="btn btn-sm btn-success" onclick="setStatus(${a.id},'active')">Aktive</button>` : ''}
-          ${a.status !== 'suspended' ? `<button class="btn btn-sm btn-danger" onclick="setStatus(${a.id},'suspended')">Sispann</button>` : ''}
+          <div style="display:flex; gap:6px;">
+            ${a.status !== 'active' ? `<button class="btn btn-sm btn-success" onclick="setStatus(${a.id},'active')">Aktive</button>` : ''}
+            ${a.status !== 'suspended' ? `<button class="btn btn-sm btn-danger" onclick="setStatus(${a.id},'suspended')">Sispann</button>` : ''}
+          </div>
         </td>
       </tr>
     `).join('') : '<tr><td colspan="6" class="text-muted text-center">Pa gen afilye</td></tr>';
 
-    opts.innerHTML = '<option value="">-- Chwazi --</option>' +
+    opts.innerHTML = '<option value="">-- Chwazi yon afilye --</option>' +
       list.map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.email)})</option>`).join('');
     notifOpts.innerHTML = '<option value="all">Tout moun</option>' +
       list.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
@@ -242,7 +271,7 @@ async function setStatus(id, status) {
     await api('/api/admin/affiliates/' + id + '/status', {
       method: 'PATCH', body: JSON.stringify({ status })
     });
-    alertGlobal('Estati mete ajou');
+    alertGlobal('Estati afilye a mete ajou');
     loadAffiliates();
   } catch (e) { alertGlobal(e.message, 'error'); }
 }
@@ -260,7 +289,7 @@ $('#saleForm').addEventListener('submit', async (e) => {
         service: $('#saleService').value
       })
     });
-    alertGlobal('Vant anrejistre');
+    alertGlobal('Vant anrejistre avèk siksè');
     e.target.reset();
     loadSales(); loadCustomers(); loadAnalytics();
   } catch (err) { alertGlobal(err.message, 'error'); }
@@ -277,7 +306,7 @@ async function loadSales() {
         <td>${esc(s.customer_name)}</td>
         <td>${esc(s.service)}</td>
         <td>${Number(s.amount).toFixed(2)} HTG</td>
-        <td>${Number(s.commission).toFixed(2)} HTG</td>
+        <td style="color:#FFB800; font-weight:bold;">${Number(s.commission).toFixed(2)} HTG</td>
         <td><span class="badge badge-${s.status === 'paid' ? 'paid' : 'pending'}">${s.status}</span></td>
         <td>${s.status !== 'paid' ? `<button class="btn btn-sm btn-success" onclick="markPaid(${s.id})">Make Paid</button>` : ''}</td>
       </tr>
@@ -290,7 +319,7 @@ async function markPaid(id) {
     await api('/api/admin/sales/' + id + '/status', {
       method: 'PATCH', body: JSON.stringify({ status: 'paid' })
     });
-    alertGlobal('Vant make paid');
+    alertGlobal('Vant make paid avèk siksè');
     loadSales();
   } catch (e) { alertGlobal(e.message, 'error'); }
 }
@@ -302,7 +331,7 @@ async function loadCustomers() {
     const body = $('#customersBody');
     body.innerHTML = list.length ? list.map(c => `
       <tr>
-        <td>${esc(c.customer_name)}</td>
+        <td><strong>${esc(c.customer_name)}</strong></td>
         <td>${esc(c.service)}</td>
         <td>${Number(c.amount).toFixed(2)} HTG</td>
         <td>${esc(c.affiliate_name)}</td>
@@ -324,7 +353,7 @@ $('#notifForm').addEventListener('submit', async (e) => {
         message: $('#notifMessage').value
       })
     });
-    alertGlobal('Voye (' + res.count + ')');
+    alertGlobal('Mesaj voye bay ' + res.count + ' moun');
     e.target.reset();
     loadNotifs();
   } catch (err) { alertGlobal(err.message, 'error'); }
@@ -350,10 +379,10 @@ async function loadAnalytics() {
   try {
     const data = await api('/api/admin/analytics');
     $('#analyticsStats').innerHTML = `
-      <div class="stat"><div class="label">Revni Total</div><div class="value">${Number(data.totals.revenue).toFixed(2)} HTG</div></div>
-      <div class="stat"><div class="label">Komisyon Total</div><div class="value">${Number(data.totals.commission).toFixed(2)} HTG</div></div>
-      <div class="stat"><div class="label">Vant</div><div class="value">${data.totals.sales_count}</div></div>
-      <div class="stat"><div class="label">Afilye Aktif</div><div class="value">${data.counts.active_affiliates}/${data.counts.affiliates}</div></div>
+      <div class="stat"><div class="label">Revni Total</div><div class="value">${Number(data.totals.revenue).toFixed(2)} <span style="font-size:1rem;color:#9a9aa5;">HTG</span></div></div>
+      <div class="stat"><div class="label">Komisyon Total</div><div class="value">${Number(data.totals.commission).toFixed(2)} <span style="font-size:1rem;color:#9a9aa5;">HTG</span></div></div>
+      <div class="stat"><div class="label">Total Vant</div><div class="value">${data.totals.sales_count}</div></div>
+      <div class="stat"><div class="label">Afilye Aktif</div><div class="value">${data.counts.active_affiliates} <span style="font-size:1rem;color:#9a9aa5;">/ ${data.counts.affiliates}</span></div></div>
     `;
 
     const labels = data.monthly.map(m => m.month);
@@ -362,22 +391,28 @@ async function loadAnalytics() {
     const ctx = $('#salesChart');
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
-      type: 'bar',
+      type: 'line', // Chanje pou line pou l pi bèl
       data: {
         labels,
         datasets: [{
           label: 'Vant (HTG)',
           data: vals,
-          backgroundColor: 'rgba(255,184,0,0.7)',
+          backgroundColor: 'rgba(255,184,0,0.2)',
           borderColor: '#FFB800',
-          borderWidth: 1,
-          borderRadius: 6
+          borderWidth: 3,
+          pointBackgroundColor: '#FF7A00',
+          pointBorderColor: '#fff',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.4 // Fè li koube
         }]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: '#f2f2f5' } }
+          legend: { display: false }
         },
         scales: {
           x: { ticks: { color: '#9a9aa5' }, grid: { color: 'rgba(255,255,255,0.05)' } },
