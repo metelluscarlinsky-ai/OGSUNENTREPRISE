@@ -35,7 +35,6 @@ h1, h2, h3, h4 {
 a { color: var(--yellow); text-decoration: none; }
 a:hover { color: var(--orange); }
 
-/* Layout */
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
 /* Navbar */
@@ -122,7 +121,7 @@ a:hover { color: var(--orange); }
   position: relative;
 }
 
-/* Cards grid */
+/* Cards grid (jenerik pou seksyon vizyon) */
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -139,14 +138,8 @@ a:hover { color: var(--orange); }
 .card:hover { transform: translateY(-4px); border-color: rgba(255,184,0,0.3); }
 .card h3 { font-size: 1.25rem; margin-bottom: 10px; }
 .card p { color: var(--muted); font-size: 0.95rem; margin-bottom: 16px; }
-.card .icon {
-  width: 48px; height: 48px; border-radius: 12px;
-  background: var(--gradient);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.5rem; margin-bottom: 16px; color: #0a0a0a; font-weight: 800;
-}
 
-/* Sections */
+/* Sections jenerik */
 section { padding: 60px 0; }
 .section-title { font-size: clamp(1.6rem, 3vw, 2.2rem); text-align: center; margin-bottom: 12px; }
 .section-sub { color: var(--muted); text-align: center; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; }
@@ -337,4 +330,235 @@ footer a:hover { color: var(--yellow); }
   .nav-links a:not(.btn) { display: none; }
   .hero { padding: 60px 0; }
   .login-card { padding: 24px; }
+}
+
+/* ============================================ */
+/* SEKSYON: SÈVIS NOU YO                        */
+/* ============================================ */
+
+.svc-section {
+  padding: 80px 0;
+  background: #08080a;
+  position: relative;
+  overflow: hidden;
+}
+
+.svc-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 184, 0, 0.06), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(255, 122, 0, 0.05), transparent 45%);
+  pointer-events: none;
+}
+
+.svc-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.svc-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.svc-eyebrow {
+  display: inline-block;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #FFB800;
+  background: rgba(255, 184, 0, 0.08);
+  border: 1px solid rgba(255, 184, 0, 0.2);
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 16px;
+}
+
+.svc-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #f5f5f7;
+  margin: 0 0 14px;
+  line-height: 1.15;
+}
+
+.svc-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.02rem;
+  color: #9a9aa5;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.svc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.svc-card {
+  background: #121216;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition:
+    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.28s ease,
+    box-shadow 0.28s ease,
+    background 0.28s ease;
+  will-change: transform;
+}
+
+.svc-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 184, 0, 0.35);
+  background: #15151a;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 184, 0, 0.08),
+    0 4px 20px rgba(255, 184, 0, 0.08);
+}
+
+.svc-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.svc-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #1c1c22;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.28s ease, transform 0.28s ease;
+}
+
+.svc-card:hover .svc-icon {
+  border-color: rgba(255, 184, 0, 0.3);
+  transform: scale(1.03);
+}
+
+.svc-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.svc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 100px;
+  background: rgba(48, 209, 88, 0.15);
+  color: #30d158;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.svc-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #30d158;
+  box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.6);
+  animation: svc-pulse 2s infinite;
+}
+
+@keyframes svc-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.6); }
+  70%  { box-shadow: 0 0 0 6px rgba(48, 209, 88, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0); }
+}
+
+.svc-card-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #f5f5f7;
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.svc-card-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.94rem;
+  color: #9a9aa5;
+  line-height: 1.6;
+  margin: 0 0 24px;
+  flex: 1;
+}
+
+.svc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #e5e5ea;
+  text-decoration: none;
+  margin-top: auto;
+  padding: 6px 0;
+  transition: color 0.22s ease, gap 0.22s ease;
+  width: fit-content;
+}
+
+.svc-link:hover,
+.svc-link:focus-visible {
+  color: #FFB800;
+  gap: 12px;
+  outline: none;
+}
+
+.svc-arrow {
+  font-size: 1.05rem;
+  display: inline-block;
+  transition: color 0.22s ease, transform 0.22s ease;
+}
+
+.svc-link:hover .svc-arrow,
+.svc-link:focus-visible .svc-arrow {
+  color: #FFB800;
+  transform: translateX(2px);
+}
+
+@media (max-width: 960px) {
+  .svc-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+}
+
+@media (max-width: 640px) {
+  .svc-section { padding: 60px 0; }
+  .svc-container { padding: 0 18px; }
+  .svc-header { margin-bottom: 40px; }
+  .svc-grid { grid-template-columns: 1fr; gap: 16px; }
+  .svc-card { padding: 22px; }
+  .svc-icon { width: 54px; height: 54px; }
+  .svc-card-title { font-size: 1.18rem; }
 }
