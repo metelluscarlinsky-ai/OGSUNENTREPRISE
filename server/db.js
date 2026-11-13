@@ -8,7 +8,8 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: isProd ? { rejectUnauthorized: false } : false,
   max: 10,
-  idleTimeoutMillis: 30000
+  idleTimeoutMillis: 30000,
+  options: '-c search_path=public' // Pou Neon
 });
 
 pool.on('error', (err) => console.error('PG Pool error:', err.message));
