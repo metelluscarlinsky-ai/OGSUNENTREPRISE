@@ -1,40 +1,41 @@
 const router = require('express').Router();
 const db = require('../db');
 const { adminOnly } = require('../middleware/auth');
-const { sendActivationEmail } = require('../mailer');
 
 // ===== Afilye =====
 router.get('/affiliates', adminOnly, async (req, res) => {
-  const r = await db.query(
-    `SELECT id,name,email,phone,service,status,created_at
-     FROM affiliates ORDER BY created_at DESC`
-  );
-  res.json(r.rows);
+  try {
+    const r = await db.query(
+      `SELECT id,name,email,phone,service,status,created_at
+       FROM affiliates ORDER BY created_at DESC`
+    );
+    res.json(r.rows);
+  } catch (e) {
+    console.error('Get affiliates error:', e.message);
+    res.status(500).json({ error: 'Erè baz done' });
+  }
 });
 
 router.patch('/affiliates/:id/status', adminOnly, async (req, res) => {
-  const { status } = req.body || {};
-  if (!['active', 'pending', 'suspended'].includes(status))
-    return res.status(400).json({ error: 'Estati pa valid' });
-  
-  const id = parseInt(req.params.id, 10);
-  if (!id) return res.status(400).json({ error: 'ID pa valid' });
-  
-  const r = await db.query(
-    'UPDATE affiliates SET status=$1 WHERE id=$2 RETURNING id,status,name,email',
-    [status, id]
-  );
-  
-  if (!r.rows.length) return res.status(404).json({ error: 'Afilye pa jwenn' });
-  
-  const affiliate = r.rows[0];
-
-  // Voye imèl si se yon aktivasyon
-  if (status === 'active' && affiliate.email) {
-    sendActivationEmail(affiliate.email, affiliate.name);
+  try {
+    const { status } = req.body || {};
+    if (!['active', 'pending', 'suspended'].includes(status))
+      return res.status(400).json({ error: 'Estati pa valid' });
+    
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(400).json({ error: 'ID pa valid' });
+    
+    const r = await db.query(
+      'UPDATE affiliates SET status=$1 WHERE id=$2 RETURNING id,status,name,email',
+      [status, id]
+    );
+    
+    if (!r.rows.length) return res.status(404).json({ error: 'Afilye pa jwenn' });
+    res.json(r.rows[0]);
+  } catch (e) {
+    console.error('Update status error:', e.message);
+    res.status(500).json({ error: 'Erè nan baz done a' });
   }
-
-  res.json(affiliate);
 });
 
 // ===== Vant =====
@@ -58,42 +59,54 @@ router.post('/sales', adminOnly, async (req, res) => {
     );
     res.json(r.rows[0]);
   } catch (e) {
-    console.error('sale:', e);
+    console.error('sale:', e.message);
     res.status(500).json({ error: 'Erè sèvè' });
   }
 });
 
 router.get('/sales', adminOnly, async (req, res) => {
-  const r = await db.query(
-    `SELECT s.*, a.name AS affiliate_name
-     FROM sales s JOIN affiliates a ON a.id = s.affiliate_id
-     ORDER BY s.created_at DESC`
-  );
-  res.json(r.rows);
+  try {
+    const r = await db.query(
+      `SELECT s.*, a.name AS affiliate_name
+       FROM sales s JOIN affiliates a ON a.id = s.affiliate_id
+       ORDER BY s.created_at DESC`
+    );
+    res.json(r.rows);
+  } catch (e) {
+    res.status(500).json({ error: 'Erè baz done' });
+  }
 });
 
 router.patch('/sales/:id/status', adminOnly, async (req, res) => {
-  const { status } = req.body || {};
-  if (!['pending', 'paid'].includes(status))
-    return res.status(400).json({ error: 'Estati pa valid' });
-  const id = parseInt(req.params.id, 10);
-  const r = await db.query(
-    'UPDATE sales SET status=$1 WHERE id=$2 RETURNING *',
-    [status, id]
-  );
-  if (!r.rows.length) return res.status(404).json({ error: 'Vant pa jwenn' });
-  res.json(r.rows[0]);
+  try {
+    const { status } = req.body || {};
+    if (!['pending', 'paid'].includes(status))
+      return res.status(400).json({ error: 'Estati pa valid' });
+    const id = parseInt(req.params.id, 10);
+    const r = await db.query(
+      'UPDATE sales SET status=$1 WHERE id=$2 RETURNING *',
+      [status, id]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Vant pa jwenn' });
+    res.json(r.rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: 'Erè baz done' });
+  }
 });
 
 // ===== Kliyan =====
 router.get('/customers', adminOnly, async (req, res) => {
-  const r = await db.query(
-    `SELECT s.customer_name, s.service, s.amount, s.created_at,
-            a.name AS affiliate_name
-     FROM sales s JOIN affiliates a ON a.id = s.affiliate_id
-     ORDER BY s.created_at DESC`
-  );
-  res.json(r.rows);
+  try {
+    const r = await db.query(
+      `SELECT s.customer_name, s.service, s.amount, s.created_at,
+              a.name AS affiliate_name
+       FROM sales s JOIN affiliates a ON a.id = s.affiliate_id
+       ORDER BY s.created_at DESC`
+    );
+    res.json(r.rows);
+  } catch (e) {
+    res.status(500).json({ error: 'Erè baz done' });
+  }
 });
 
 // ===== Notifikasyon =====
@@ -124,49 +137,56 @@ router.post('/notifications', adminOnly, async (req, res) => {
     );
     res.json({ message: 'Notifikasyon voye', count: 1 });
   } catch (e) {
-    console.error('notif:', e);
     res.status(500).json({ error: 'Erè sèvè' });
   }
 });
 
 router.get('/notifications', adminOnly, async (req, res) => {
-  const r = await db.query(
-    `SELECT n.*, a.name AS affiliate_name
-     FROM notifications n JOIN affiliates a ON a.id = n.affiliate_id
-     ORDER BY n.created_at DESC LIMIT 100`
-  );
-  res.json(r.rows);
+  try {
+    const r = await db.query(
+      `SELECT n.*, a.name AS affiliate_name
+       FROM notifications n JOIN affiliates a ON a.id = n.affiliate_id
+       ORDER BY n.created_at DESC LIMIT 100`
+    );
+    res.json(r.rows);
+  } catch (e) {
+    res.status(500).json({ error: 'Erè baz done' });
+  }
 });
 
 // ===== Analytique =====
 router.get('/analytics', adminOnly, async (req, res) => {
-  const monthly = await db.query(`
-    SELECT TO_CHAR(date_trunc('month', created_at), 'YYYY-MM') AS month,
-           COALESCE(SUM(amount),0) AS total_sales,
-           COALESCE(SUM(commission),0) AS total_commission,
-           COUNT(*)::int AS count
-    FROM sales
-    WHERE created_at >= NOW() - INTERVAL '12 months'
-    GROUP BY 1 ORDER BY 1
-  `);
-  const totals = await db.query(`
-    SELECT
-      COALESCE(SUM(amount),0) AS revenue,
-      COALESCE(SUM(commission),0) AS commission,
-      COUNT(*)::int AS sales_count
-    FROM sales
-  `);
-  const counts = await db.query(`
-    SELECT
-      (SELECT COUNT(*)::int FROM affiliates) AS affiliates,
-      (SELECT COUNT(*)::int FROM affiliates WHERE status='active') AS active_affiliates,
-      (SELECT COUNT(*)::int FROM affiliates WHERE status='pending') AS pending_affiliates
-  `);
-  res.json({
-    monthly: monthly.rows,
-    totals: totals.rows[0],
-    counts: counts.rows[0]
-  });
+  try {
+    const monthly = await db.query(`
+      SELECT TO_CHAR(date_trunc('month', created_at), 'YYYY-MM') AS month,
+             COALESCE(SUM(amount),0) AS total_sales,
+             COALESCE(SUM(commission),0) AS total_commission,
+             COUNT(*)::int AS count
+      FROM sales
+      WHERE created_at >= NOW() - INTERVAL '12 months'
+      GROUP BY 1 ORDER BY 1
+    `);
+    const totals = await db.query(`
+      SELECT
+        COALESCE(SUM(amount),0) AS revenue,
+        COALESCE(SUM(commission),0) AS commission,
+        COUNT(*)::int AS sales_count
+      FROM sales
+    `);
+    const counts = await db.query(`
+      SELECT
+        (SELECT COUNT(*)::int FROM affiliates) AS affiliates,
+        (SELECT COUNT(*)::int FROM affiliates WHERE status='active') AS active_affiliates,
+        (SELECT COUNT(*)::int FROM affiliates WHERE status='pending') AS pending_affiliates
+    `);
+    res.json({
+      monthly: monthly.rows,
+      totals: totals.rows[0],
+      counts: counts.rows[0]
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Erè baz done' });
+  }
 });
 
 module.exports = router;
