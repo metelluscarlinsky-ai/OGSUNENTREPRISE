@@ -6,8 +6,43 @@
 <title>Admin - OGSUNENTERPRISE</title>
 <link rel="stylesheet" href="/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  /* Bèl Toast Notifikasyon */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .toast {
+    background: rgba(18, 18, 22, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    transform: translateX(150%);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-width: 250px;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast-success { border-left: 4px solid #30d158; }
+  .toast-error { border-left: 4px solid #ef4444; }
+</style>
 </head>
 <body>
+
+<!-- KONTENÈ POU TOAST YO -->
+<div id="toastContainer" class="toast-container"></div>
 
 <!-- LOGIN -->
 <div id="loginView" class="login-wrap">
@@ -51,8 +86,6 @@
         <span class="dot"></span> Admin
       </div>
     </div>
-
-    <div id="globalAlert" class="alert"></div>
 
     <!-- AFILYE -->
     <div id="tab-affiliates" class="tab-panel active">
@@ -159,11 +192,25 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
-function alertGlobal(msg, type='success') {
-  const el = $('#globalAlert');
-  el.className = 'alert show alert-' + type;
-  el.textContent = msg;
-  setTimeout(() => el.className = 'alert', 5000);
+// ============ BÈL TOAST NOTIFIKASYON ============
+function showToast(message, type = 'success') {
+  const container = $('#toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast toast-' + type;
+  
+  const icon = type === 'success' ? '✅' : '❌';
+  toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+  
+  container.appendChild(toast);
+  
+  // Ti animasyon pou fè l parèt
+  setTimeout(() => toast.classList.add('show'), 10);
+  
+  // Retire l apre 4 segond
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 4000);
 }
 
 async function api(url, opts={}) {
@@ -220,10 +267,7 @@ $$('.sidebar nav a[data-tab]').forEach(a => {
     const tab = a.dataset.tab;
     $$('.sidebar nav a[data-tab]').forEach(x => x.classList.remove('active'));
     a.classList.add('active');
-    
-    // Chanje tit paj la
     $('#pageTitle').textContent = pageTitles[tab] || 'Dashboard';
-    
     $$('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + tab).classList.add('active');
   });
@@ -252,8 +296,8 @@ async function loadAffiliates() {
         <td><span class="badge badge-${a.status}">${a.status}</span></td>
         <td>
           <div style="display:flex; gap:6px;">
-            ${a.status !== 'active' ? `<button class="btn btn-sm btn-success" onclick="setStatus(${a.id},'active')">Aktive</button>` : ''}
-            ${a.status !== 'suspended' ? `<button class="btn btn-sm btn-danger" onclick="setStatus(${a.id},'suspended')">Sispann</button>` : ''}
+            ${a.status !== 'active' ? `<button type="button" class="btn btn-sm btn-success" onclick="setStatus(${a.id},'active')">Aktive</button>` : ''}
+            ${a.status !== 'suspended' ? `<button type="button" class="btn btn-sm btn-danger" onclick="setStatus(${a.id},'suspended')">Sispann</button>` : ''}
           </div>
         </td>
       </tr>
@@ -263,7 +307,7 @@ async function loadAffiliates() {
       list.map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.email)})</option>`).join('');
     notifOpts.innerHTML = '<option value="all">Tout moun</option>' +
       list.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  } catch (e) { showToast(e.message, 'error'); }
 }
 
 async function setStatus(id, status) {
@@ -271,9 +315,15 @@ async function setStatus(id, status) {
     await api('/api/admin/affiliates/' + id + '/status', {
       method: 'PATCH', body: JSON.stringify({ status })
     });
-    alertGlobal('Estati afilye a mete ajou');
+    
+    if (status === 'active') {
+      showToast('Afilye a aktive epi imèl voye!', 'success');
+    } else {
+      showToast('Afilye a sispann!', 'success');
+    }
+    
     loadAffiliates();
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  } catch (e) { showToast(e.message, 'error'); }
 }
 
 // ============ VANT ============
@@ -289,10 +339,10 @@ $('#saleForm').addEventListener('submit', async (e) => {
         service: $('#saleService').value
       })
     });
-    alertGlobal('Vant anrejistre avèk siksè');
+    showToast('Vant anrejistre avèk siksè!', 'success');
     e.target.reset();
     loadSales(); loadCustomers(); loadAnalytics();
-  } catch (err) { alertGlobal(err.message, 'error'); }
+  } catch (err) { showToast(err.message, 'error'); }
 });
 
 async function loadSales() {
@@ -308,10 +358,10 @@ async function loadSales() {
         <td>${Number(s.amount).toFixed(2)} HTG</td>
         <td style="color:#FFB800; font-weight:bold;">${Number(s.commission).toFixed(2)} HTG</td>
         <td><span class="badge badge-${s.status === 'paid' ? 'paid' : 'pending'}">${s.status}</span></td>
-        <td>${s.status !== 'paid' ? `<button class="btn btn-sm btn-success" onclick="markPaid(${s.id})">Make Paid</button>` : ''}</td>
+        <td>${s.status !== 'paid' ? `<button type="button" class="btn btn-sm btn-success" onclick="markPaid(${s.id})">Make Paid</button>` : ''}</td>
       </tr>
     `).join('') : '<tr><td colspan="8" class="text-muted text-center">Pa gen vant</td></tr>';
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  } catch (e) { showToast(e.message, 'error'); }
 }
 
 async function markPaid(id) {
@@ -319,9 +369,9 @@ async function markPaid(id) {
     await api('/api/admin/sales/' + id + '/status', {
       method: 'PATCH', body: JSON.stringify({ status: 'paid' })
     });
-    alertGlobal('Vant make paid avèk siksè');
+    showToast('Vant make paid avèk siksè!', 'success');
     loadSales();
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  } catch (e) { showToast(e.message, 'error'); }
 }
 
 // ============ KLIYAN ============
@@ -338,7 +388,7 @@ async function loadCustomers() {
         <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
       </tr>
     `).join('') : '<tr><td colspan="5" class="text-muted text-center">Pa gen kliyan</td></tr>';
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  } catch (e) { showToast(e.message, 'error'); }
 }
 
 // ============ NOTIF ============
@@ -353,10 +403,10 @@ $('#notifForm').addEventListener('submit', async (e) => {
         message: $('#notifMessage').value
       })
     });
-    alertGlobal('Mesaj voye bay ' + res.count + ' moun');
+    showToast('Mesaj voye bay ' + res.count + ' moun!', 'success');
     e.target.reset();
     loadNotifs();
-  } catch (err) { alertGlobal(err.message, 'error'); }
+  } catch (err) { showToast(err.message, 'error'); }
 });
 
 async function loadNotifs() {
@@ -370,7 +420,7 @@ async function loadNotifs() {
         <td>${esc(n.message)}</td>
       </tr>
     `).join('') : '<tr><td colspan="3" class="text-muted text-center">Pa gen notifikasyon</td></tr>';
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  } catch (e) { showToast(e.message, 'error'); }
 }
 
 // ============ ANALYTIK ============
@@ -391,7 +441,7 @@ async function loadAnalytics() {
     const ctx = $('#salesChart');
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
-      type: 'line', // Chanje pou line pou l pi bèl
+      type: 'line',
       data: {
         labels,
         datasets: [{
@@ -405,22 +455,20 @@ async function loadAnalytics() {
           pointRadius: 4,
           pointHoverRadius: 6,
           fill: true,
-          tension: 0.4 // Fè li koube
+          tension: 0.4
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
+        plugins: { legend: { display: false } },
         scales: {
           x: { ticks: { color: '#9a9aa5' }, grid: { color: 'rgba(255,255,255,0.05)' } },
           y: { ticks: { color: '#9a9aa5' }, grid: { color: 'rgba(255,255,255,0.05)' } }
         }
       }
     });
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  } catch (e) { showToast(e.message, 'error'); }
 }
 
 function esc(s) {

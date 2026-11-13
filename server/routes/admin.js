@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const db = require('../db');
 const { adminOnly } = require('../middleware/auth');
+const { sendActivationEmail } = require('../mailer');
 
 // ===== Afilye =====
 router.get('/affiliates', adminOnly, async (req, res) => {
@@ -15,14 +16,25 @@ router.patch('/affiliates/:id/status', adminOnly, async (req, res) => {
   const { status } = req.body || {};
   if (!['active', 'pending', 'suspended'].includes(status))
     return res.status(400).json({ error: 'Estati pa valid' });
+  
   const id = parseInt(req.params.id, 10);
   if (!id) return res.status(400).json({ error: 'ID pa valid' });
+  
   const r = await db.query(
-    'UPDATE affiliates SET status=$1 WHERE id=$2 RETURNING id,status',
+    'UPDATE affiliates SET status=$1 WHERE id=$2 RETURNING id,status,name,email',
     [status, id]
   );
+  
   if (!r.rows.length) return res.status(404).json({ error: 'Afilye pa jwenn' });
-  res.json(r.rows[0]);
+  
+  const affiliate = r.rows[0];
+
+  // Voye imèl si se yon aktivasyon
+  if (status === 'active' && affiliate.email) {
+    sendActivationEmail(affiliate.email, affiliate.name);
+  }
+
+  res.json(affiliate);
 });
 
 // ===== Vant =====
@@ -73,7 +85,7 @@ router.patch('/sales/:id/status', adminOnly, async (req, res) => {
   res.json(r.rows[0]);
 });
 
-// ===== Kliyan (dedwi soti nan vant) =====
+// ===== Kliyan =====
 router.get('/customers', adminOnly, async (req, res) => {
   const r = await db.query(
     `SELECT s.customer_name, s.service, s.amount, s.created_at,
