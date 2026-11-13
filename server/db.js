@@ -3,10 +3,9 @@ require('dotenv').config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }, // Obligatwa pou Neon
+  ssl: { rejectUnauthorized: false },
   max: 10,
-  idleTimeoutMillis: 30000,
-  options: '-c search_path=public' // Fòse chèche tab yo nan 'public'
+  idleTimeoutMillis: 30000
 });
 
 pool.on('error', (err) => console.error('PG Pool error:', err.message));
