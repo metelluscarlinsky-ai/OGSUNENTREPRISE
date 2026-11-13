@@ -5,8 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Espas Afilye - OGSUNENTERPRISE</title>
 <link rel="stylesheet" href="/style.css">
+<style>
+  /* BÈL TOAST NOTIFIKASYON */
+  .toast-wrap { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+  .toast-box { 
+    background: rgba(18, 18, 22, 0.95); backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid #FFB800;
+    color: #fff; padding: 14px 20px; border-radius: 10px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 12px;
+    font-family: 'Inter', sans-serif; font-size: 0.95rem;
+    transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .toast-box.show { transform: translateX(0); }
+  .toast-box.success { border-left-color: #30d158; }
+  .toast-box.error { border-left-color: #ef4444; }
+  
+  /* Kòd pou Link Inik la */
+  .link-box {
+    display: flex; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; align-items: center; gap: 10px;
+  }
+  .link-box input { flex: 1; background: transparent; border: none; color: #FFB800; font-family: monospace; font-size: 0.9rem; outline: none; }
+</style>
 </head>
 <body>
+
+<div class="toast-wrap" id="toastWrap"></div>
 
 <!-- LOGIN -->
 <div id="loginView" class="login-wrap">
@@ -15,18 +38,9 @@
     <p class="sub">Konekte ak kont ou</p>
     <div id="loginAlert" class="alert"></div>
     <form id="affLoginForm">
-      <div class="field">
-        <label for="loginEmail">Imèl</label>
-        <input type="email" id="loginEmail" required>
-      </div>
-      <div class="field">
-        <label for="loginPass">Modpas</label>
-        <input type="password" id="loginPass" required>
-      </div>
+      <div class="field"><label>Imèl</label><input type="email" id="loginEmail" required></div>
+      <div class="field"><label>Modpas</label><input type="password" id="loginPass" required></div>
       <button type="submit" class="btn btn-primary" style="width: 100%;">Konekte</button>
-      <p class="text-center mt-3 text-muted" style="font-size: 0.85rem;">
-        Pa gen kont? <a href="/#affiliate">Enskri</a>
-      </p>
     </form>
   </div>
 </div>
@@ -37,7 +51,8 @@
     <div class="brand">OGSUN <span>Afilye</span></div>
     <nav>
       <a href="#" data-tab="portfolio" class="active">Pòtfolyo</a>
-      <a href="#" data-tab="notifications">Notifikasyon</a>
+      <a href="#" data-tab="marketing">Zouti Maketing</a>
+      <a href="#" data-tab="payments">Peman</a>
       <a href="#" data-tab="tasks">Espas Travay</a>
       <a href="#" id="logoutBtn" class="logout">Dekonekte</a>
     </nav>
@@ -48,7 +63,19 @@
     <div id="tab-portfolio" class="tab-panel active">
       <div class="top-bar">
         <h1>Pòtfolyo Mwen</h1>
+        <span class="badge badge-active" id="userNameDisplay">Chaje...</span>
       </div>
+
+      <!-- LINK INIK -->
+      <div class="card mb-3" style="background: linear-gradient(135deg, rgba(255,184,0,0.1), rgba(255,122,0,0.05)); border-color: rgba(255,184,0,0.3);">
+        <h3 class="mb-2">🔗 Lyen Inik Pa W (Tracking Link)</h3>
+        <p class="text-muted mb-2" style="font-size: 0.9rem;">Se lyen sa a ou dwe pataje. Lè yon moun klike sou li epi achte, komisyon an antre pou ou.</p>
+        <div class="link-box">
+          <input type="text" id="trackingLink" readonly>
+          <button type="button" class="btn btn-primary btn-sm" onclick="copyLink()">Kopye Lyen</button>
+        </div>
+      </div>
+
       <div class="stats-grid" id="stats"></div>
 
       <h3 class="mb-2 mt-3">Kliyan Mwen Yo</h3>
@@ -60,55 +87,45 @@
       </div>
     </div>
 
-    <!-- NOTIFIKASYON -->
-    <div id="tab-notifications" class="tab-panel">
-      <div class="top-bar">
-        <h1>Notifikasyon</h1>
-      </div>
-      <div id="notifList"></div>
-    </div>
-
-    <!-- ESPAS TRAVAY (TASKS) -->
-    <div id="tab-tasks" class="tab-panel">
-      <div class="top-bar">
-        <h1>Espas Travay Mwen</h1>
-        <span class="badge badge-active">Afilye Aktif</span>
-      </div>
-
-      <!-- 1. ZOUTI PWOMOSYON -->
-      <div class="card mb-3">
-        <h3 class="mb-3">🚀 Zouti Pwomosyon (Kopye Lyen yo)</h3>
-        <p class="text-muted mb-3" style="font-size: 0.9rem;">Kopye lyen sa yo epi pataje yo sou WhatsApp, Facebook, oswa TikTok pou w jwenn kliyan.</p>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          
-          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-            <div>
-              <strong>Shop Online</strong><br>
-              <span class="text-muted" style="font-size: 0.8rem;">ogsun-mache-lakay.onrender.com</span>
-            </div>
-            <button type="button" class="btn btn-sm btn-ghost" onclick="copyLink('https://ogsun-mache-lakay.onrender.com')">Kopye</button>
+    <!-- ZOUTI MAKETING -->
+    <div id="tab-marketing" class="tab-panel">
+      <div class="top-bar"><h1>Zouti Maketing</h1></div>
+      <div class="grid-3">
+        <div class="card">
+          <h3 class="mb-2">Bannè pou Facebook</h3>
+          <p class="text-muted mb-3" style="font-size: 0.9rem;">Kopye kòd HTML sa a epi mete l sou paj Facebook oswa sit entènèt ou.</p>
+          <textarea readonly style="width: 100%; height: 60px; background: #0f0f13; border: 1px solid #333; color: #FFB800; font-size: 0.8rem; padding: 10px; border-radius: 8px;"><a href="LIEN_INIK_OU"><img src="/images/ogsun-logo.png" width="250" alt="OGSUN"></a></textarea>
+        </div>
+        <div class="card">
+          <h3 class="mb-2">Kòd Pwomo (5% rabè)</h3>
+          <p class="text-muted mb-3" style="font-size: 0.9rem;">Bay kliyan w kòd sa a pou l jwenn rabè, epi w ap toujou touche komisyon w.</p>
+          <div style="background: #1c1c22; padding: 12px; border-radius: 8px; text-align: center; font-family: monospace; font-size: 1.2rem; color: #30d158; font-weight: bold; letter-spacing: 2px;">
+            OGSUN5
           </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-            <div>
-              <strong>Order Food</strong><br>
-              <span class="text-muted" style="font-size: 0.8rem;">komandem.onrender.com</span>
-            </div>
-            <button type="button" class="btn btn-sm btn-ghost" onclick="copyLink('https://komandem.onrender.com')">Kopye</button>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
-            <div>
-              <strong>OGCARS (Machin)</strong><br>
-              <span class="text-muted" style="font-size: 0.8rem;">ogcars.onrender.com</span>
-            </div>
-            <button type="button" class="btn btn-sm btn-ghost" onclick="copyLink('https://ogcars.onrender.com')">Kopye</button>
-          </div>
-
+        </div>
+        <div class="card">
+          <h3 class="mb-2">Tèks pou WhatsApp</h3>
+          <p class="text-muted mb-3" style="font-size: 0.9rem;">Kopye mesaj sa a epi voye l bay kliyan w yo.</p>
+          <textarea readonly style="width: 100%; height: 80px; background: #0f0f13; border: 1px solid #333; color: #ccc; font-size: 0.85rem; padding: 10px; border-radius: 8px;">Bonjou! Gen yon bèl opòtinite pou ou. Vizite OGSUN Market pou w achte pwodwi w fasilman an liy ak livrezon rapid. Klike sou lyen sa a: LIEN_INIK_OU</textarea>
         </div>
       </div>
+    </div>
 
-      <!-- 2. PLAN AKSYON -->
+    <!-- PEMAN -->
+    <div id="tab-payments" class="tab-panel">
+      <div class="top-bar"><h1>Istwa Peman Mwen</h1></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dat</th><th>Montan</th><th>Metòd</th><th>Estati</th></tr></thead>
+          <tbody id="paymentsBody"><tr><td colspan="4" class="text-muted text-center">Chaje...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ESPAS TRAVAY -->
+    <div id="tab-tasks" class="tab-panel">
+      <div class="top-bar"><h1>Espas Travay Mwen</h1></div>
+      
       <div class="card mb-3">
         <div class="flex-between mb-3">
           <h3>📋 Plan Aksyon Jodi a</h3>
@@ -117,13 +134,9 @@
         <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 20px; overflow: hidden;">
           <div id="progressBar" style="width: 0%; height: 100%; background: var(--gradient); transition: width 0.3s ease;"></div>
         </div>
-        
-        <div id="dailyChecklist" style="display: flex; flex-direction: column; gap: 12px;">
-          <!-- Sa yo ap jere pa JS la -->
-        </div>
+        <div id="dailyChecklist" style="display: flex; flex-direction: column; gap: 12px;"></div>
       </div>
 
-      <!-- 3. TRAVAY PÈSONÈL -->
       <div class="card">
         <h3 class="mb-3">✍️ Travay Pèsonèl Mwen</h3>
         <form id="taskForm" style="display: flex; gap: 8px; margin-bottom: 16px;">
@@ -132,7 +145,6 @@
         </form>
         <div id="taskList" style="display: flex; flex-direction: column; gap: 10px;"></div>
       </div>
-
     </div>
   </main>
 </div>
@@ -141,16 +153,70 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
-function alertGlobal(msg, type='success') {
-  // Kreye yon ti toast rapid
-  const toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#30d158;color:#fff;padding:12px 20px;border-radius:8px;z-index:9999;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
-  if(type === 'error') toast.style.background = '#ef4444';
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+// ==========================================
+// SISTÈM NOTIFIKASYON AK SON
+// ==========================================
+// Yon ti son (beep) an base64 pou l pa bezwen chaje okenn fichye
+const beepSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"+ "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
+
+function showToast(message, type = 'success') {
+  const wrap = $('#toastWrap');
+  const box = document.createElement('div');
+  box.className = 'toast-box ' + type;
+  
+  // Jwe ti son an
+  try { beepSound.play(); } catch(e) {}
+
+  const icon = type === 'success' ? '✅' : '❌';
+  box.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+  wrap.appendChild(box);
+
+  setTimeout(() => box.classList.add('show'), 10);
+  setTimeout(() => { 
+    box.classList.remove('show'); 
+    setTimeout(() => box.remove(), 400); 
+  }, 4000);
 }
 
+// ==========================================
+// FONKSYON KOPYE LYEN (KORIJE)
+// ==========================================
+function copyLink() {
+  const input = $('#trackingLink');
+  const text = input.value;
+  
+  if (!text) return showToast('Pa gen lyen pou kopye', 'error');
+
+  // Metòd modèn
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Lyen kopye ak siksè!', 'success');
+    }).catch(() => fallbackCopy(text));
+  } else {
+    // Metòd ansyen (pou telefòn ki pa sipòte navigator.clipboard)
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed"; // Evite paj la deplase
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    showToast('Lyen kopye!', 'success');
+  } catch (err) {
+    showToast('Erè pandan kopye a. Kopye l manyèlman.', 'error');
+  }
+  document.body.removeChild(textArea);
+}
+
+// ==========================================
+// API & AUTH
+// ==========================================
 async function api(url, opts={}) {
   const r = await fetch(url, {
     credentials: 'include',
@@ -180,7 +246,7 @@ $('#affLoginForm').addEventListener('submit', async (e) => {
 async function showApp() {
   $('#loginView').classList.add('hidden');
   $('#appView').classList.remove('hidden');
-  await Promise.all([loadPortfolio(), loadNotifications(), loadTasks()]);
+  await Promise.all([loadProfile(), loadPortfolio(), loadTasks()]);
 }
 
 async function checkAuth() {
@@ -188,8 +254,6 @@ async function checkAuth() {
 }
 checkAuth();
 
-// TABS
-const pageTitles = { portfolio: 'Pòtfolyo Mwen', notifications: 'Notifikasyon', tasks: 'Espas Travay Mwen' };
 $$('.sidebar nav a[data-tab]').forEach(a => {
   a.addEventListener('click', (e) => {
     e.preventDefault();
@@ -207,16 +271,30 @@ $('#logoutBtn').addEventListener('click', async (e) => {
   location.reload();
 });
 
-// ============ PÒTFOLYO ============
+// ==========================================
+// CHAJE DONE YO
+// ==========================================
+async function loadProfile() {
+  try {
+    const me = await api('/api/affiliate/me');
+    $('#userNameDisplay').textContent = me.name;
+    $('#trackingLink').value = me.tracking_link || 'Lyen pa disponib';
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
 async function loadPortfolio() {
   try {
     const d = await api('/api/affiliate/portfolio');
+    
+    // Mete ajou stats yo
     $('#stats').innerHTML = `
+      <div class="stat"><div class="label">Klik (Tracking)</div><div class="value">${d.clicks}</div></div>
       <div class="stat"><div class="label">Vant Total</div><div class="value">${Number(d.stats.total_sales).toFixed(2)} HTG</div></div>
       <div class="stat"><div class="label">Komisyon Total</div><div class="value">${Number(d.stats.total_commission).toFixed(2)} HTG</div></div>
-      <div class="stat"><div class="label">Komisyon Peye</div><div class="value">${Number(d.stats.paid_commission).toFixed(2)} HTG</div></div>
       <div class="stat"><div class="label">Kliyan</div><div class="value">${d.stats.sales_count}</div></div>
     `;
+
+    // Kliyan yo
     const body = $('#custBody');
     body.innerHTML = d.customers.length ? d.customers.map(c => `
       <tr>
@@ -228,43 +306,28 @@ async function loadPortfolio() {
         <td><span class="badge badge-${c.status === 'paid' ? 'paid' : 'pending'}">${c.status}</span></td>
       </tr>
     `).join('') : '<tr><td colspan="6" class="text-muted text-center">Poko gen vant</td></tr>';
-  } catch (e) { console.error(e); }
+
+    // Peman yo
+    const pBody = $('#paymentsBody');
+    pBody.innerHTML = d.payments.length ? d.payments.map(p => `
+      <tr>
+        <td>${new Date(p.created_at).toLocaleDateString('fr-FR')}</td>
+        <td style="color:#30d158; font-weight:bold;">${Number(p.amount).toFixed(2)} HTG</td>
+        <td>${esc(p.method)}</td>
+        <td><span class="badge badge-active">${esc(p.status)}</span></td>
+      </tr>
+    `).join('') : '<tr><td colspan="4" class="text-muted text-center">Pa gen peman pou kounye a</td></tr>';
+
+  } catch (e) { showToast(e.message, 'error'); }
 }
 
-// ============ NOTIFIKASYON ============
-async function loadNotifications() {
-  try {
-    const list = await api('/api/affiliate/notifications');
-    const el = $('#notifList');
-    el.innerHTML = list.length ? list.map(n => `
-      <div class="card mb-2" onclick="markRead(${n.id})" style="cursor: pointer; ${n.is_read ? 'opacity:0.6' : ''}">
-        <div class="flex-between">
-          <div>${esc(n.message)}</div>
-          <div class="text-muted" style="font-size: 0.8rem;">${new Date(n.created_at).toLocaleDateString('fr-FR')}</div>
-        </div>
-      </div>
-    `).join('') : '<p class="text-muted">Pa gen notifikasyon</p>';
-  } catch (e) { console.error(e); }
-}
-
-async function markRead(id) {
-  try { await api('/api/affiliate/notifications/' + id + '/read', { method: 'PATCH' }); loadNotifications(); } catch {}
-}
-
-// ============ ESPAS TRAVAY ============
-function copyLink(url) {
-  navigator.clipboard.writeText(url).then(() => {
-    alertGlobal('Lyen kopye! Ou ka pataje l kounye a.');
-  }).catch(() => {
-    alertGlobal('Erè pandan kopye a', 'error');
-  });
-}
-
-// Bèl tach pou plan aksyon an
+// ==========================================
+// TASKS
+// ==========================================
 const dailyTasks = [
-  { id: 'd1', text: 'Pataje lyen Shop Online sou WhatsApp Status' },
-  { id: 'd2', text: 'Voye mesaj bay omwen 3 nouvo kliyan potansyèl' },
-  { id: 'd3', text: 'Fè yon pòs sou paj Facebook oswa TikTok ou' }
+  { id: 'd1', text: 'Pataje lyen inik mwen sou WhatsApp Status' },
+  { id: 'd2', text: 'Voye mesaj bay 3 nouvo kliyan potansyèl' },
+  { id: 'd3', text: 'Fè yon pòs sou paj Facebook/TikTok mwen' }
 ];
 
 function renderDailyChecklist() {
@@ -284,6 +347,7 @@ function renderDailyChecklist() {
 function toggleDaily(id, checked) {
   localStorage.setItem('daily_' + id, checked);
   renderDailyChecklist();
+  if(checked) showToast('Travay fini!', 'success');
 }
 
 function updateProgress() {
@@ -294,18 +358,14 @@ function updateProgress() {
   $('#progressText').textContent = done + '/' + total + ' fin fèt';
 }
 
-// Travay Pèsonèl (Soti nan DB a)
 $('#taskForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
-    await api('/api/tasks', {
-      method: 'POST',
-      body: JSON.stringify({ description: $('#taskInput').value })
-    });
+    await api('/api/tasks', { method: 'POST', body: JSON.stringify({ description: $('#taskInput').value }) });
     $('#taskInput').value = '';
     loadTasks();
-    alertGlobal('Travay ajoute!');
-  } catch (err) { alertGlobal(err.message, 'error'); }
+    showToast('Travay ajoute!');
+  } catch (err) { showToast(err.message, 'error'); }
 });
 
 async function loadTasks() {
@@ -328,15 +388,13 @@ async function toggleTask(id, completed) {
   try {
     await api('/api/tasks/' + id, { method: 'PATCH', body: JSON.stringify({ completed }) });
     loadTasks();
-  } catch (e) { alertGlobal(e.message, 'error'); }
+    if(completed) showToast('Travay fini!');
+  } catch (e) { showToast(e.message, 'error'); }
 }
 
 async function deleteTask(id) {
   if(!confirm('Ou sèten ou vle efase travay sa a?')) return;
-  try {
-    await api('/api/tasks/' + id, { method: 'DELETE' });
-    loadTasks();
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  try { await api('/api/tasks/' + id, { method: 'DELETE' }); loadTasks(); } catch (e) { showToast(e.message, 'error'); }
 }
 
 function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
