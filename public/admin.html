@@ -192,6 +192,7 @@ $('#logoutBtn').addEventListener('click', async (e) => {
   location.reload();
 });
 
+// ====== AFILYE ======
 async function loadAffiliates() {
   try {
     const list = await api('/api/admin/affiliates');
@@ -208,8 +209,8 @@ async function loadAffiliates() {
         <td><span class="badge badge-${a.status}">${a.status}</span></td>
         <td>
           <div style="display:flex; gap:6px;">
-            ${a.status !== 'active' ? `<button type="button" class="btn btn-sm btn-success" onclick="setStatus(${a.id},'active')">Aktive</button>` : ''}
-            ${a.status !== 'suspended' ? `<button type="button" class="btn btn-sm btn-danger" onclick="setStatus(${a.id},'suspended')">Sispann</button>` : ''}
+            ${a.status !== 'active' ? `<button type="button" class="btn btn-sm btn-success btn-status" data-id="${a.id}" data-status="active">Aktive</button>` : ''}
+            ${a.status !== 'suspended' ? `<button type="button" class="btn btn-sm btn-danger btn-status" data-id="${a.id}" data-status="suspended">Sispann</button>` : ''}
           </div>
         </td>
       </tr>
@@ -220,15 +221,30 @@ async function loadAffiliates() {
   } catch (e) { showToast(e.message, 'error'); }
 }
 
-async function setStatus(id, status) {
+// SE ISIT LA NOU ITILIZE EVENT DELEGATION POU BOUTON YO
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.btn-status');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const status = btn.dataset.status;
+  
+  const originalText = btn.textContent;
+  btn.textContent = 'Tann...';
+  btn.disabled = true;
+
   try {
     await api('/api/admin/affiliates/' + id + '/status', {
       method: 'PATCH', body: JSON.stringify({ status })
     });
-    showToast('Estati a chanje avèk siksè!', 'success');
-    loadAffiliates();
-  } catch (e) { showToast(e.message, 'error'); }
-}
+    showToast(status === 'active' ? 'Afilye aktive!' : 'Afilye sispann!', 'success');
+    await loadAffiliates(); // Rechaje lis la
+  } catch (err) {
+    showToast(err.message, 'error');
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+});
 
 $('#saleForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -248,6 +264,7 @@ $('#saleForm').addEventListener('submit', async (e) => {
   } catch (err) { showToast(err.message, 'error'); }
 });
 
+// ====== LÒT FONKSYON YO ======
 async function loadSales() {
   try {
     const list = await api('/api/admin/sales');
@@ -261,19 +278,23 @@ async function loadSales() {
         <td>${Number(s.amount).toFixed(2)} HTG</td>
         <td style="color:#FFB800; font-weight:bold;">${Number(s.commission).toFixed(2)} HTG</td>
         <td><span class="badge badge-${s.status === 'paid' ? 'paid' : 'pending'}">${s.status}</span></td>
-        <td>${s.status !== 'paid' ? `<button type="button" class="btn btn-sm btn-success" onclick="markPaid(${s.id})">Make Paid</button>` : ''}</td>
+        <td>${s.status !== 'paid' ? `<button type="button" class="btn btn-sm btn-success btn-paid" data-id="${s.id}">Make Paid</button>` : ''}</td>
       </tr>
     `).join('') : '<tr><td colspan="8" class="text-muted text-center">Pa gen vant</td></tr>';
   } catch (e) { showToast(e.message, 'error'); }
 }
 
-async function markPaid(id) {
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.btn-paid');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  btn.disabled = true;
   try {
     await api('/api/admin/sales/' + id + '/status', { method: 'PATCH', body: JSON.stringify({ status: 'paid' }) });
     showToast('Vant make paid!', 'success');
     loadSales();
-  } catch (e) { showToast(e.message, 'error'); }
-}
+  } catch (e) { showToast(e.message, 'error'); btn.disabled = false; }
+});
 
 async function loadCustomers() {
   try {
