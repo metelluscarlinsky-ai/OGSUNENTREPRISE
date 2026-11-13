@@ -34,20 +34,21 @@
 <!-- DASHBOARD -->
 <div id="appView" class="app-shell hidden">
   <aside class="sidebar">
-    <div class="logo">OGSUN Afilye</div>
+    <div class="brand">OGSUN <span>Afilye</span></div>
     <nav>
       <a href="#" data-tab="portfolio" class="active">Pòtfolyo</a>
       <a href="#" data-tab="notifications">Notifikasyon</a>
-      <a href="#" data-tab="tasks">Travay</a>
-      <a href="#" id="logoutBtn" style="margin-top: 24px;">Dekonekte</a>
+      <a href="#" data-tab="tasks">Espas Travay</a>
+      <a href="#" id="logoutBtn" class="logout">Dekonekte</a>
     </nav>
   </aside>
 
   <main class="main-content">
-    <div id="globalAlert" class="alert"></div>
-
+    <!-- PÒTFOLYO -->
     <div id="tab-portfolio" class="tab-panel active">
-      <h2 class="mb-3">Pòtfolyo Mwen</h2>
+      <div class="top-bar">
+        <h1>Pòtfolyo Mwen</h1>
+      </div>
       <div class="stats-grid" id="stats"></div>
 
       <h3 class="mb-2 mt-3">Kliyan Mwen Yo</h3>
@@ -59,20 +60,79 @@
       </div>
     </div>
 
+    <!-- NOTIFIKASYON -->
     <div id="tab-notifications" class="tab-panel">
-      <h2 class="mb-3">Notifikasyon</h2>
+      <div class="top-bar">
+        <h1>Notifikasyon</h1>
+      </div>
       <div id="notifList"></div>
     </div>
 
+    <!-- ESPAS TRAVAY (TASKS) -->
     <div id="tab-tasks" class="tab-panel">
-      <h2 class="mb-3">Travay Mwen</h2>
+      <div class="top-bar">
+        <h1>Espas Travay Mwen</h1>
+        <span class="badge badge-active">Afilye Aktif</span>
+      </div>
+
+      <!-- 1. ZOUTI PWOMOSYON -->
       <div class="card mb-3">
-        <form id="taskForm" style="display: flex; gap: 8px;">
-          <input type="text" id="taskInput" placeholder="Ekri yon travay (egz. Fè pwomosyon OGCARS jodi a)" style="flex: 1;" required>
+        <h3 class="mb-3">🚀 Zouti Pwomosyon (Kopye Lyen yo)</h3>
+        <p class="text-muted mb-3" style="font-size: 0.9rem;">Kopye lyen sa yo epi pataje yo sou WhatsApp, Facebook, oswa TikTok pou w jwenn kliyan.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+            <div>
+              <strong>Shop Online</strong><br>
+              <span class="text-muted" style="font-size: 0.8rem;">ogsun-mache-lakay.onrender.com</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" onclick="copyLink('https://ogsun-mache-lakay.onrender.com')">Kopye</button>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+            <div>
+              <strong>Order Food</strong><br>
+              <span class="text-muted" style="font-size: 0.8rem;">komandem.onrender.com</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" onclick="copyLink('https://komandem.onrender.com')">Kopye</button>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;">
+            <div>
+              <strong>OGCARS (Machin)</strong><br>
+              <span class="text-muted" style="font-size: 0.8rem;">ogcars.onrender.com</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" onclick="copyLink('https://ogcars.onrender.com')">Kopye</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 2. PLAN AKSYON -->
+      <div class="card mb-3">
+        <div class="flex-between mb-3">
+          <h3>📋 Plan Aksyon Jodi a</h3>
+          <span id="progressText" style="color: #FFB800; font-weight: bold; font-size: 0.9rem;">0/3 fin fèt</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 20px; overflow: hidden;">
+          <div id="progressBar" style="width: 0%; height: 100%; background: var(--gradient); transition: width 0.3s ease;"></div>
+        </div>
+        
+        <div id="dailyChecklist" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Sa yo ap jere pa JS la -->
+        </div>
+      </div>
+
+      <!-- 3. TRAVAY PÈSONÈL -->
+      <div class="card">
+        <h3 class="mb-3">✍️ Travay Pèsonèl Mwen</h3>
+        <form id="taskForm" style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <input type="text" id="taskInput" placeholder="Egz: Fè yon TikTok pou OGCARS..." style="flex: 1;" required>
           <button type="submit" class="btn btn-primary">Ajoute</button>
         </form>
+        <div id="taskList" style="display: flex; flex-direction: column; gap: 10px;"></div>
       </div>
-      <div id="taskList"></div>
+
     </div>
   </main>
 </div>
@@ -82,10 +142,13 @@ const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
 function alertGlobal(msg, type='success') {
-  const el = $('#globalAlert');
-  el.className = 'alert show alert-' + type;
-  el.textContent = msg;
-  setTimeout(() => el.className = 'alert', 5000);
+  // Kreye yon ti toast rapid
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#30d158;color:#fff;padding:12px 20px;border-radius:8px;z-index:9999;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+  if(type === 'error') toast.style.background = '#ef4444';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
 }
 
 async function api(url, opts={}) {
@@ -121,13 +184,12 @@ async function showApp() {
 }
 
 async function checkAuth() {
-  try {
-    const me = await api('/api/auth/me');
-    if (me.role === 'affiliate') showApp();
-  } catch {}
+  try { const me = await api('/api/auth/me'); if (me.role === 'affiliate') showApp(); } catch {}
 }
 checkAuth();
 
+// TABS
+const pageTitles = { portfolio: 'Pòtfolyo Mwen', notifications: 'Notifikasyon', tasks: 'Espas Travay Mwen' };
 $$('.sidebar nav a[data-tab]').forEach(a => {
   a.addEventListener('click', (e) => {
     e.preventDefault();
@@ -166,7 +228,7 @@ async function loadPortfolio() {
         <td><span class="badge badge-${c.status === 'paid' ? 'paid' : 'pending'}">${c.status}</span></td>
       </tr>
     `).join('') : '<tr><td colspan="6" class="text-muted text-center">Poko gen vant</td></tr>';
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  } catch (e) { console.error(e); }
 }
 
 // ============ NOTIFIKASYON ============
@@ -182,17 +244,57 @@ async function loadNotifications() {
         </div>
       </div>
     `).join('') : '<p class="text-muted">Pa gen notifikasyon</p>';
-  } catch (e) { alertGlobal(e.message, 'error'); }
+  } catch (e) { console.error(e); }
 }
 
 async function markRead(id) {
-  try {
-    await api('/api/affiliate/notifications/' + id + '/read', { method: 'PATCH' });
-    loadNotifications();
-  } catch {}
+  try { await api('/api/affiliate/notifications/' + id + '/read', { method: 'PATCH' }); loadNotifications(); } catch {}
 }
 
-// ============ TASKS ============
+// ============ ESPAS TRAVAY ============
+function copyLink(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    alertGlobal('Lyen kopye! Ou ka pataje l kounye a.');
+  }).catch(() => {
+    alertGlobal('Erè pandan kopye a', 'error');
+  });
+}
+
+// Bèl tach pou plan aksyon an
+const dailyTasks = [
+  { id: 'd1', text: 'Pataje lyen Shop Online sou WhatsApp Status' },
+  { id: 'd2', text: 'Voye mesaj bay omwen 3 nouvo kliyan potansyèl' },
+  { id: 'd3', text: 'Fè yon pòs sou paj Facebook oswa TikTok ou' }
+];
+
+function renderDailyChecklist() {
+  const el = $('#dailyChecklist');
+  el.innerHTML = dailyTasks.map(t => {
+    const checked = localStorage.getItem('daily_' + t.id) === 'true';
+    return `
+      <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleDaily('${t.id}', this.checked)" style="width: 20px; height: 20px; accent-color: #FFB800;">
+        <span style="${checked ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${t.text}</span>
+      </label>
+    `;
+  }).join('');
+  updateProgress();
+}
+
+function toggleDaily(id, checked) {
+  localStorage.setItem('daily_' + id, checked);
+  renderDailyChecklist();
+}
+
+function updateProgress() {
+  const total = dailyTasks.length;
+  const done = dailyTasks.filter(t => localStorage.getItem('daily_' + t.id) === 'true').length;
+  const pct = (done / total) * 100;
+  $('#progressBar').style.width = pct + '%';
+  $('#progressText').textContent = done + '/' + total + ' fin fèt';
+}
+
+// Travay Pèsonèl (Soti nan DB a)
 $('#taskForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
@@ -202,6 +304,7 @@ $('#taskForm').addEventListener('submit', async (e) => {
     });
     $('#taskInput').value = '';
     loadTasks();
+    alertGlobal('Travay ajoute!');
   } catch (err) { alertGlobal(err.message, 'error'); }
 });
 
@@ -210,15 +313,15 @@ async function loadTasks() {
     const list = await api('/api/tasks');
     const el = $('#taskList');
     el.innerHTML = list.length ? list.map(t => `
-      <div class="card mb-2 flex-between">
+      <div class="flex-between" style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
         <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-          <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id}, this.checked)" style="width: 20px; height: 20px; flex-shrink: 0;">
+          <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id}, this.checked)" style="width: 20px; height: 20px; accent-color: #30d158;">
           <div style="${t.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${esc(t.description)}</div>
         </div>
-        <button class="btn btn-sm btn-ghost" onclick="deleteTask(${t.id})">Efase</button>
+        <button type="button" class="btn btn-sm btn-ghost" onclick="deleteTask(${t.id})" style="color: #ef4444;">Efase</button>
       </div>
-    `).join('') : '<p class="text-muted">Pa gen travay</p>';
-  } catch (e) { alertGlobal(e.message, 'error'); }
+    `).join('') : '<p class="text-muted">Pa gen travay pèsonèl pou kounye a.</p>';
+  } catch (e) { console.error(e); }
 }
 
 async function toggleTask(id, completed) {
@@ -229,15 +332,17 @@ async function toggleTask(id, completed) {
 }
 
 async function deleteTask(id) {
+  if(!confirm('Ou sèten ou vle efase travay sa a?')) return;
   try {
     await api('/api/tasks/' + id, { method: 'DELETE' });
     loadTasks();
   } catch (e) { alertGlobal(e.message, 'error'); }
 }
 
-function esc(s) {
-  return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-}
+function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+// Kòmanse
+renderDailyChecklist();
 </script>
 </body>
 </html>
