@@ -6,37 +6,15 @@
 <title>Espas Afilye - OGSUNENTERPRISE</title>
 <link rel="stylesheet" href="/style.css">
 <style>
-  /* BÈL TOAST NOTIFIKASYON */
-  .toast-wrap { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-  .toast-box { 
-    background: rgba(18, 18, 22, 0.95); backdrop-filter: blur(10px); 
-    border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid #FFB800;
-    color: #fff; padding: 14px 20px; border-radius: 10px; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 12px;
-    font-family: 'Inter', sans-serif; font-size: 0.95rem;
-    transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  .toast-box.show { transform: translateX(0); }
-  .toast-box.success { border-left-color: #30d158; }
-  .toast-box.error { border-left-color: #ef4444; }
-  
-  /* Kòd pou Link Inik la */
-  .link-box {
-    display: flex; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; align-items: center; gap: 10px;
-  }
+  .link-box { display: flex; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; align-items: center; gap: 10px; }
   .link-box input { flex: 1; background: transparent; border: none; color: #FFB800; font-family: monospace; font-size: 0.9rem; outline: none; }
 </style>
 </head>
 <body>
 
-<div class="toast-wrap" id="toastWrap"></div>
-
-<!-- LOGIN -->
 <div id="loginView" class="login-wrap">
   <div class="login-card">
     <h2>Espas Afilye</h2>
-    <p class="sub">Konekte ak kont ou</p>
-    <div id="loginAlert" class="alert"></div>
     <form id="affLoginForm">
       <div class="field"><label>Imèl</label><input type="email" id="loginEmail" required></div>
       <div class="field"><label>Modpas</label><input type="password" id="loginPass" required></div>
@@ -45,106 +23,64 @@
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div id="appView" class="app-shell hidden">
   <aside class="sidebar">
     <div class="brand">OGSUN <span>Afilye</span></div>
     <nav>
-      <a href="#" data-tab="portfolio" class="active">Pòtfolyo</a>
-      <a href="#" data-tab="marketing">Zouti Maketing</a>
-      <a href="#" data-tab="payments">Peman</a>
-      <a href="#" data-tab="tasks">Espas Travay</a>
+      <a href="#" data-tab="portfolio" class="active">Pòtfolyo & Kliyan</a>
+      <a href="#" data-tab="missions">Gwo Misyon</a>
+      <a href="#" data-tab="notifications">Notifikasyon</a>
       <a href="#" id="logoutBtn" class="logout">Dekonekte</a>
     </nav>
   </aside>
 
   <main class="main-content">
-    <!-- PÒTFOLYO -->
     <div id="tab-portfolio" class="tab-panel active">
-      <div class="top-bar">
-        <h1>Pòtfolyo Mwen</h1>
-        <span class="badge badge-active" id="userNameDisplay">Chaje...</span>
-      </div>
-
-      <!-- LINK INIK -->
+      <div class="top-bar"><h1>Pòtfolyo Mwen</h1></div>
+      
       <div class="card mb-3" style="background: linear-gradient(135deg, rgba(255,184,0,0.1), rgba(255,122,0,0.05)); border-color: rgba(255,184,0,0.3);">
-        <h3 class="mb-2">🔗 Lyen Inik Pa W (Tracking Link)</h3>
-        <p class="text-muted mb-2" style="font-size: 0.9rem;">Se lyen sa a ou dwe pataje. Lè yon moun klike sou li epi achte, komisyon an antre pou ou.</p>
-        <div class="link-box">
-          <input type="text" id="trackingLink" readonly>
-          <button type="button" class="btn btn-primary btn-sm" onclick="copyLink()">Kopye Lyen</button>
-        </div>
+        <h3 class="mb-2">🔗 Lyen Inik Pa W</h3>
+        <div class="link-box"><input type="text" id="trackingLink" readonly><button type="button" class="btn btn-primary btn-sm" onclick="copyLink()">Kopye</button></div>
       </div>
 
       <div class="stats-grid" id="stats"></div>
 
-      <h3 class="mb-2 mt-3">Kliyan Mwen Yo</h3>
+      <h3 class="mb-2 mt-3">Kliyan Mwen Yo (Ak Sit yo achte a)</h3>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Dat</th><th>Kliyan</th><th>Sèvis</th><th>Montan</th><th>Komisyon</th><th>Estati</th></tr></thead>
-          <tbody id="custBody"><tr><td colspan="6" class="text-muted text-center">Chaje...</td></tr></tbody>
+          <thead><tr><th>Dat</th><th>Kliyan</th><th>Sit</th><th>Montan</th><th>Komisyon</th><th>Estati</th></tr></thead>
+          <tbody id="custBody"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- ZOUTI MAKETING -->
-    <div id="tab-marketing" class="tab-panel">
-      <div class="top-bar"><h1>Zouti Maketing</h1></div>
-      <div class="grid-3">
-        <div class="card">
-          <h3 class="mb-2">Bannè pou Facebook</h3>
-          <p class="text-muted mb-3" style="font-size: 0.9rem;">Kopye kòd HTML sa a epi mete l sou paj Facebook oswa sit entènèt ou.</p>
-          <textarea readonly style="width: 100%; height: 60px; background: #0f0f13; border: 1px solid #333; color: #FFB800; font-size: 0.8rem; padding: 10px; border-radius: 8px;"><a href="LIEN_INIK_OU"><img src="/images/ogsun-logo.png" width="250" alt="OGSUN"></a></textarea>
-        </div>
-        <div class="card">
-          <h3 class="mb-2">Kòd Pwomo (5% rabè)</h3>
-          <p class="text-muted mb-3" style="font-size: 0.9rem;">Bay kliyan w kòd sa a pou l jwenn rabè, epi w ap toujou touche komisyon w.</p>
-          <div style="background: #1c1c22; padding: 12px; border-radius: 8px; text-align: center; font-family: monospace; font-size: 1.2rem; color: #30d158; font-weight: bold; letter-spacing: 2px;">
-            OGSUN5
-          </div>
-        </div>
-        <div class="card">
-          <h3 class="mb-2">Tèks pou WhatsApp</h3>
-          <p class="text-muted mb-3" style="font-size: 0.9rem;">Kopye mesaj sa a epi voye l bay kliyan w yo.</p>
-          <textarea readonly style="width: 100%; height: 80px; background: #0f0f13; border: 1px solid #333; color: #ccc; font-size: 0.85rem; padding: 10px; border-radius: 8px;">Bonjou! Gen yon bèl opòtinite pou ou. Vizite OGSUN Market pou w achte pwodwi w fasilman an liy ak livrezon rapid. Klike sou lyen sa a: LIEN_INIK_OU</textarea>
-        </div>
-      </div>
-    </div>
+    <div id="tab-missions" class="tab-panel">
+      <div class="top-bar"><h1>Gwo Misyon</h1></div>
+      <p class="text-muted mb-3">Fè misyon sa yo epi soumèt yon prèv senp (yon ti tèks oswa yon lyen). Admin lan ap verifye l.</p>
 
-    <!-- PEMAN -->
-    <div id="tab-payments" class="tab-panel">
-      <div class="top-bar"><h1>Istwa Peman Mwen</h1></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Dat</th><th>Montan</th><th>Metòd</th><th>Estati</th></tr></thead>
-          <tbody id="paymentsBody"><tr><td colspan="4" class="text-muted text-center">Chaje...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ESPAS TRAVAY -->
-    <div id="tab-tasks" class="tab-panel">
-      <div class="top-bar"><h1>Espas Travay Mwen</h1></div>
-      
       <div class="card mb-3">
-        <div class="flex-between mb-3">
-          <h3>📋 Plan Aksyon Jodi a</h3>
-          <span id="progressText" style="color: #FFB800; font-weight: bold; font-size: 0.9rem;">0/3 fin fèt</span>
-        </div>
-        <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 20px; overflow: hidden;">
-          <div id="progressBar" style="width: 0%; height: 100%; background: var(--gradient); transition: width 0.3s ease;"></div>
-        </div>
-        <div id="dailyChecklist" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        <h3 class="mb-2">🚀 Pataje lyen w sou 3 gwoup WhatsApp</h3>
+        <form onsubmit="submitMission(event, 'Pataje lyen WhatsApp')">
+          <input type="text" name="proof" placeholder="Ekri non gwoup yo oswa mete yon lyen screenshot..." style="width: 100%; padding: 10px; background: #08080a; border: 1px solid #333; border-radius: 8px; color: #fff; margin-bottom: 10px;" required>
+          <button type="submit" class="btn btn-primary btn-sm">Soumèt Prèv</button>
+        </form>
       </div>
 
-      <div class="card">
-        <h3 class="mb-3">✍️ Travay Pèsonèl Mwen</h3>
-        <form id="taskForm" style="display: flex; gap: 8px; margin-bottom: 16px;">
-          <input type="text" id="taskInput" placeholder="Egz: Fè yon TikTok pou OGCARS..." style="flex: 1;" required>
-          <button type="submit" class="btn btn-primary">Ajoute</button>
+      <div class="card mb-3">
+        <h3 class="mb-2">🎬 Fè yon videyo TikTok pou OGCARS</h3>
+        <form onsubmit="submitMission(event, 'Videyo TikTok OGCARS')">
+          <input type="text" name="proof" placeholder="Kole lyen TikTok ou a..." style="width: 100%; padding: 10px; background: #08080a; border: 1px solid #333; border-radius: 8px; color: #fff; margin-bottom: 10px;" required>
+          <button type="submit" class="btn btn-primary btn-sm">Soumèt Prèv</button>
         </form>
-        <div id="taskList" style="display: flex; flex-direction: column; gap: 10px;"></div>
       </div>
+
+      <h3 class="mb-2 mt-3">Istwa Soumèt Mwen</h3>
+      <div id="tasksList"></div>
+    </div>
+
+    <div id="tab-notifications" class="tab-panel">
+      <div class="top-bar"><h1>Notifikasyon</h1></div>
+      <div id="notifList"></div>
     </div>
   </main>
 </div>
@@ -153,254 +89,95 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
-// ==========================================
-// SISTÈM NOTIFIKASYON AK SON
-// ==========================================
-// Yon ti son (beep) an base64 pou l pa bezwen chaje okenn fichye
-const beepSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"+ "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
-
-function showToast(message, type = 'success') {
-  const wrap = $('#toastWrap');
-  const box = document.createElement('div');
-  box.className = 'toast-box ' + type;
-  
-  // Jwe ti son an
-  try { beepSound.play(); } catch(e) {}
-
-  const icon = type === 'success' ? '✅' : '❌';
-  box.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
-  wrap.appendChild(box);
-
-  setTimeout(() => box.classList.add('show'), 10);
-  setTimeout(() => { 
-    box.classList.remove('show'); 
-    setTimeout(() => box.remove(), 400); 
-  }, 4000);
-}
-
-// ==========================================
-// FONKSYON KOPYE LYEN (KORIJE)
-// ==========================================
-function copyLink() {
-  const input = $('#trackingLink');
-  const text = input.value;
-  
-  if (!text) return showToast('Pa gen lyen pou kopye', 'error');
-
-  // Metòd modèn
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('Lyen kopye ak siksè!', 'success');
-    }).catch(() => fallbackCopy(text));
-  } else {
-    // Metòd ansyen (pou telefòn ki pa sipòte navigator.clipboard)
-    fallbackCopy(text);
-  }
-}
-
-function fallbackCopy(text) {
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  textArea.style.position = "fixed"; // Evite paj la deplase
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-  try {
-    document.execCommand('copy');
-    showToast('Lyen kopye!', 'success');
-  } catch (err) {
-    showToast('Erè pandan kopye a. Kopye l manyèlman.', 'error');
-  }
-  document.body.removeChild(textArea);
-}
-
-// ==========================================
-// API & AUTH
-// ==========================================
 async function api(url, opts={}) {
-  const r = await fetch(url, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(opts.headers||{}) },
-    ...opts
-  });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || 'Erè ' + r.status);
-  return data;
+  const r = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...opts });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Erè');
+  return d;
 }
 
 $('#affLoginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  try {
-    await api('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email: $('#loginEmail').value, password: $('#loginPass').value })
-    });
-    showApp();
-  } catch (err) {
-    const el = $('#loginAlert');
-    el.className = 'alert show alert-error';
-    el.textContent = err.message;
-  }
+  try { await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: $('#loginEmail').value, password: $('#loginPass').value }) }); showApp(); } 
+  catch (err) { alert(err.message); }
 });
 
 async function showApp() {
   $('#loginView').classList.add('hidden');
   $('#appView').classList.remove('hidden');
-  await Promise.all([loadProfile(), loadPortfolio(), loadTasks()]);
-}
-
-async function checkAuth() {
-  try { const me = await api('/api/auth/me'); if (me.role === 'affiliate') showApp(); } catch {}
+  await Promise.all([loadProfile(), loadPortfolio(), loadTasks(), loadNotifications()]);
 }
 checkAuth();
+async function checkAuth() { try { const me = await api('/api/auth/me'); if (me.role === 'affiliate') showApp(); } catch {} }
 
 $$('.sidebar nav a[data-tab]').forEach(a => {
   a.addEventListener('click', (e) => {
     e.preventDefault();
-    const tab = a.dataset.tab;
     $$('.sidebar nav a[data-tab]').forEach(x => x.classList.remove('active'));
     a.classList.add('active');
     $$('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('tab-' + a.dataset.tab).classList.add('active');
   });
 });
 
-$('#logoutBtn').addEventListener('click', async (e) => {
-  e.preventDefault();
-  await api('/api/auth/logout', { method: 'POST' });
-  location.reload();
-});
+$('#logoutBtn').addEventListener('click', async (e) => { e.preventDefault(); await api('/api/auth/logout', { method: 'POST' }); location.reload(); });
 
-// ==========================================
-// CHAJE DONE YO
-// ==========================================
+function copyLink() {
+  const text = $('#trackingLink').value;
+  navigator.clipboard.writeText(text).then(() => alert('Lyen kopye!')).catch(() => {});
+}
+
 async function loadProfile() {
-  try {
-    const me = await api('/api/affiliate/me');
-    $('#userNameDisplay').textContent = me.name;
-    $('#trackingLink').value = me.tracking_link || 'Lyen pa disponib';
-  } catch (e) { showToast(e.message, 'error'); }
+  const me = await api('/api/affiliate/me');
+  $('#trackingLink').value = me.tracking_link;
 }
 
 async function loadPortfolio() {
-  try {
-    const d = await api('/api/affiliate/portfolio');
-    
-    // Mete ajou stats yo
-    $('#stats').innerHTML = `
-      <div class="stat"><div class="label">Klik (Tracking)</div><div class="value">${d.clicks}</div></div>
-      <div class="stat"><div class="label">Vant Total</div><div class="value">${Number(d.stats.total_sales).toFixed(2)} HTG</div></div>
-      <div class="stat"><div class="label">Komisyon Total</div><div class="value">${Number(d.stats.total_commission).toFixed(2)} HTG</div></div>
-      <div class="stat"><div class="label">Kliyan</div><div class="value">${d.stats.sales_count}</div></div>
-    `;
-
-    // Kliyan yo
-    const body = $('#custBody');
-    body.innerHTML = d.customers.length ? d.customers.map(c => `
-      <tr>
-        <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
-        <td>${esc(c.customer_name)}</td>
-        <td>${esc(c.service)}</td>
-        <td>${Number(c.amount).toFixed(2)} HTG</td>
-        <td>${Number(c.commission).toFixed(2)} HTG</td>
-        <td><span class="badge badge-${c.status === 'paid' ? 'paid' : 'pending'}">${c.status}</span></td>
-      </tr>
-    `).join('') : '<tr><td colspan="6" class="text-muted text-center">Poko gen vant</td></tr>';
-
-    // Peman yo
-    const pBody = $('#paymentsBody');
-    pBody.innerHTML = d.payments.length ? d.payments.map(p => `
-      <tr>
-        <td>${new Date(p.created_at).toLocaleDateString('fr-FR')}</td>
-        <td style="color:#30d158; font-weight:bold;">${Number(p.amount).toFixed(2)} HTG</td>
-        <td>${esc(p.method)}</td>
-        <td><span class="badge badge-active">${esc(p.status)}</span></td>
-      </tr>
-    `).join('') : '<tr><td colspan="4" class="text-muted text-center">Pa gen peman pou kounye a</td></tr>';
-
-  } catch (e) { showToast(e.message, 'error'); }
+  const d = await api('/api/affiliate/portfolio');
+  $('#stats').innerHTML = `
+    <div class="stat"><div class="label">Klik</div><div class="value">${d.clicks || 0}</div></div>
+    <div class="stat"><div class="label">Vant Total</div><div class="value">${Number(d.stats.total_sales).toFixed(2)} HTG</div></div>
+    <div class="stat"><div class="label">Komisyon</div><div class="value">${Number(d.stats.total_commission).toFixed(2)} HTG</div></div>
+  `;
+  $('#custBody').innerHTML = d.customers.length ? d.customers.map(c => `
+    <tr>
+      <td>${new Date(c.created_at).toLocaleDateString()}</td>
+      <td><strong>${esc(c.customer_name)}</strong></td>
+      <td><span class="badge badge-pending">${esc(c.site_source)}</span></td>
+      <td>${Number(c.amount).toFixed(2)} HTG</td>
+      <td>${Number(c.commission).toFixed(2)} HTG</td>
+      <td><span class="badge badge-${c.status==='paid'?'paid':'pending'}">${c.status}</span></td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" class="text-muted text-center">Poko gen vant</td></tr>';
 }
 
-// ==========================================
-// TASKS
-// ==========================================
-const dailyTasks = [
-  { id: 'd1', text: 'Pataje lyen inik mwen sou WhatsApp Status' },
-  { id: 'd2', text: 'Voye mesaj bay 3 nouvo kliyan potansyèl' },
-  { id: 'd3', text: 'Fè yon pòs sou paj Facebook/TikTok mwen' }
-];
-
-function renderDailyChecklist() {
-  const el = $('#dailyChecklist');
-  el.innerHTML = dailyTasks.map(t => {
-    const checked = localStorage.getItem('daily_' + t.id) === 'true';
-    return `
-      <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleDaily('${t.id}', this.checked)" style="width: 20px; height: 20px; accent-color: #FFB800;">
-        <span style="${checked ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${t.text}</span>
-      </label>
-    `;
-  }).join('');
-  updateProgress();
-}
-
-function toggleDaily(id, checked) {
-  localStorage.setItem('daily_' + id, checked);
-  renderDailyChecklist();
-  if(checked) showToast('Travay fini!', 'success');
-}
-
-function updateProgress() {
-  const total = dailyTasks.length;
-  const done = dailyTasks.filter(t => localStorage.getItem('daily_' + t.id) === 'true').length;
-  const pct = (done / total) * 100;
-  $('#progressBar').style.width = pct + '%';
-  $('#progressText').textContent = done + '/' + total + ' fin fèt';
-}
-
-$('#taskForm').addEventListener('submit', async (e) => {
+async function submitMission(e, name) {
   e.preventDefault();
+  const proof = e.target.proof.value;
   try {
-    await api('/api/tasks', { method: 'POST', body: JSON.stringify({ description: $('#taskInput').value }) });
-    $('#taskInput').value = '';
+    await api('/api/tasks', { method: 'POST', body: JSON.stringify({ description: name, proof_url: proof }) });
+    alert('Prèv soumèt! Tann Admin.');
+    e.target.reset();
     loadTasks();
-    showToast('Travay ajoute!');
-  } catch (err) { showToast(err.message, 'error'); }
-});
+  } catch (err) { alert(err.message); }
+}
 
 async function loadTasks() {
-  try {
-    const list = await api('/api/tasks');
-    const el = $('#taskList');
-    el.innerHTML = list.length ? list.map(t => `
-      <div class="flex-between" style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-        <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-          <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id}, this.checked)" style="width: 20px; height: 20px; accent-color: #30d158;">
-          <div style="${t.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${esc(t.description)}</div>
-        </div>
-        <button type="button" class="btn btn-sm btn-ghost" onclick="deleteTask(${t.id})" style="color: #ef4444;">Efase</button>
-      </div>
-    `).join('') : '<p class="text-muted">Pa gen travay pèsonèl pou kounye a.</p>';
-  } catch (e) { console.error(e); }
+  const list = await api('/api/tasks');
+  $('#tasksList').innerHTML = list.map(t => `
+    <div class="card mb-2 flex-between">
+      <div><strong>${esc(t.description)}</strong><br><span class="text-muted" style="font-size:0.8rem;">Prèv: ${esc(t.proof_url)}</span></div>
+      <span class="badge badge-${t.status==='approved'?'active':t.status==='rejected'?'suspended':'pending'}">${t.status}</span>
+    </div>
+  `).join('');
 }
 
-async function toggleTask(id, completed) {
-  try {
-    await api('/api/tasks/' + id, { method: 'PATCH', body: JSON.stringify({ completed }) });
-    loadTasks();
-    if(completed) showToast('Travay fini!');
-  } catch (e) { showToast(e.message, 'error'); }
-}
-
-async function deleteTask(id) {
-  if(!confirm('Ou sèten ou vle efase travay sa a?')) return;
-  try { await api('/api/tasks/' + id, { method: 'DELETE' }); loadTasks(); } catch (e) { showToast(e.message, 'error'); }
+async function loadNotifications() {
+  const list = await api('/api/affiliate/notifications');
+  $('#notifList').innerHTML = list.map(n => `<div class="card mb-2"><strong>${esc(n.message)}</strong><br><span class="text-muted">${new Date(n.created_at).toLocaleString()}</span></div>`).join('');
 }
 
 function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
-
-// Kòmanse
-renderDailyChecklist();
 </script>
 </body>
 </html>

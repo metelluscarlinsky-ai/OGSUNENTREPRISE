@@ -8,43 +8,33 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
-  .toast { background: rgba(18, 18, 22, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 14px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 12px; font-family: 'Inter', sans-serif; font-size: 0.95rem; transform: translateX(150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-width: 250px; }
+  .toast { background: #121216; border: 1px solid #333; border-left: 4px solid #FFB800; color: #fff; padding: 14px 20px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(150%); transition: transform 0.3s; }
   .toast.show { transform: translateX(0); }
-  .toast-success { border-left: 4px solid #30d158; }
-  .toast-error { border-left: 4px solid #ef4444; }
+  .toast-success { border-left-color: #30d158; }
+  .toast-error { border-left-color: #ef4444; }
 </style>
 </head>
 <body>
 
 <div id="toastContainer" class="toast-container"></div>
 
-<!-- LOGIN -->
 <div id="loginView" class="login-wrap">
   <div class="login-card">
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div class="logo" style="font-size: 1.5rem;">OGSUN<span style="color:white">ENTERPRISE</span></div>
-      <p class="text-muted" style="font-size: 0.9rem; margin-top: 8px;">Panel Administrasyon</p>
-    </div>
-    <div id="loginAlert" class="alert"></div>
+    <div style="text-align: center; margin-bottom: 24px;"><div class="logo">OGSUN<span style="color:white">ENTERPRISE</span></div></div>
     <form id="adminLoginForm">
-      <div class="field">
-        <label for="adminPass">Modpas Admin</label>
-        <input type="password" id="adminPass" required autofocus placeholder="Antre modpas la...">
-      </div>
-      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Konekte</button>
+      <div class="field"><label>Modpas Admin</label><input type="password" id="adminPass" required></div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Konekte</button>
     </form>
   </div>
 </div>
 
-<!-- APP DASHBOARD -->
 <div id="appView" class="app-shell hidden">
-  
   <aside class="sidebar">
     <div class="brand">OGSUN <span>Admin</span></div>
     <nav>
       <a href="#" data-tab="affiliates" class="active">👥 Afilye</a>
-      <a href="#" data-tab="economy">💰 Ekonomi</a>
-      <a href="#" data-tab="customers">🛍️ Kliyan</a>
+      <a href="#" data-tab="tasks">📋 Travay Afilye</a>
+      <a href="#" data-tab="customers">🛍️ Tout Kliyan yo</a>
       <a href="#" data-tab="notifications">🔔 Notifikasyon</a>
       <a href="#" data-tab="analytics">📊 Analytik</a>
       <a href="#" id="logoutBtn" class="logout">🚪 Dekonekte</a>
@@ -52,74 +42,51 @@
   </aside>
 
   <main class="main-content">
-    <div class="top-bar">
-      <h1 id="pageTitle">Jesyon Afilye</h1>
-      <div class="admin-profile"><span class="dot"></span> Admin</div>
-    </div>
+    <div class="top-bar"><h1 id="pageTitle">Jesyon Afilye</h1></div>
 
     <div id="tab-affiliates" class="tab-panel active">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Non</th><th>Imèl</th><th>Telefòn</th><th>Sèvis</th><th>Estati</th><th>Aksyon</th></tr></thead>
-          <tbody id="affiliatesBody"><tr><td colspan="6" class="text-muted text-center">Chaje...</td></tr></tbody>
-        </table>
-      </div>
+      <div class="table-wrap"><table><thead><tr><th>Non</th><th>Imèl</th><th>Kòd Ref</th><th>Estati</th><th>Aksyon</th></tr></thead><tbody id="affiliatesBody"></tbody></table></div>
     </div>
 
-    <div id="tab-economy" class="tab-panel">
+    <div id="tab-tasks" class="tab-panel">
+      <div class="table-wrap"><table><thead><tr><th>Dat</th><th>Afilye</th><th>Travay</th><th>Prèv</th><th>Estati</th><th>Aksyon</th></tr></thead><tbody id="tasksBody"></tbody></table></div>
+    </div>
+
+    <!-- KLIYAN AK SIT -->
+    <div id="tab-customers" class="tab-panel">
       <div class="card mb-3">
-        <h3 class="mb-2">Ajoute yon Vant</h3>
+        <h3 class="mb-2">Ajoute yon Vant Manyèl</h3>
         <form id="saleForm" class="sale-form-grid">
-          <div class="field"><label>Afilye</label><select id="saleAffiliate" required></select></div>
-          <div class="field"><label>Non Kliyan</label><input type="text" id="saleCustomer" required></div>
-          <div class="field"><label>Montan (HTG)</label><input type="number" id="saleAmount" min="0.01" step="0.01" required></div>
-          <div class="field"><label>Sèvis</label><select id="saleService" required><option value="Shop Online">Shop Online</option><option value="Order Food">Order Food</option><option value="OGCARS">OGCARS</option></select></div>
-          <div class="full"><button type="submit" class="btn btn-primary">Anrejistre Vant (+10% komisyon)</button></div>
+          <div class="field"><select id="saleAffiliate" required></select></div>
+          <div class="field"><input type="text" id="saleCustomer" placeholder="Non Kliyan" required></div>
+          <div class="field"><input type="number" id="saleAmount" placeholder="Montan HTG" required></div>
+          <div class="field"><select id="saleSite"><option>Shop Online</option><option>Order Food</option><option>OGCARS</option></select></div>
+          <div class="full"><button type="submit" class="btn btn-primary">Anrejistre Vant</button></div>
         </form>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Dat</th><th>Afilye</th><th>Kliyan</th><th>Sèvis</th><th>Montan</th><th>Komisyon</th><th>Estati</th><th>Aksyon</th></tr></thead>
-          <tbody id="salesBody"><tr><td colspan="8" class="text-muted text-center">Chaje...</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="tab-customers" class="tab-panel">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Kliyan</th><th>Sèvis</th><th>Montan</th><th>Afilye</th><th>Dat</th></tr></thead>
-          <tbody id="customersBody"><tr><td colspan="5" class="text-muted text-center">Chaje...</td></tr></tbody>
+          <thead><tr><th>Dat</th><th>Kliyan</th><th>Sit</th><th>Afilye (Kòd)</th><th>Montan</th><th>Komisyon</th></tr></thead>
+          <tbody id="customersBody"></tbody>
         </table>
       </div>
     </div>
 
     <div id="tab-notifications" class="tab-panel">
       <div class="card mb-3">
-        <h3 class="mb-2">Voye Notifikasyon</h3>
         <form id="notifForm">
-          <div class="field"><label>Destinatè</label><select id="notifTarget"><option value="all">Tout moun</option></select></div>
-          <div class="field"><label>Mesaj</label><textarea id="notifMessage" required></textarea></div>
+          <div class="field"><select id="notifTarget"><option value="all">Tout moun</option></select></div>
+          <div class="field"><textarea id="notifMessage" required></textarea></div>
           <button type="submit" class="btn btn-primary">Voye</button>
         </form>
       </div>
-      <h3 class="mb-2">Istwa Notifikasyon</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Dat</th><th>Afilye</th><th>Mesaj</th></tr></thead>
-          <tbody id="notifsBody"><tr><td colspan="3" class="text-muted text-center">Chaje...</td></tr></tbody>
-        </table>
-      </div>
+      <div class="table-wrap"><table><thead><tr><th>Dat</th><th>Afilye</th><th>Mesaj</th></tr></thead><tbody id="notifsBody"></tbody></table></div>
     </div>
 
     <div id="tab-analytics" class="tab-panel">
       <div class="stats-grid" id="analyticsStats"></div>
-      <div class="card">
-        <h3 class="mb-2">Vant pa Mwa</h3>
-        <div style="position: relative; height: 350px; width: 100%;"><canvas id="salesChart"></canvas></div>
-      </div>
+      <div class="card"><div style="position: relative; height: 350px;"><canvas id="salesChart"></canvas></div></div>
     </div>
-
   </main>
 </div>
 
@@ -127,124 +94,103 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
-function showToast(message, type = 'success') {
-  const container = $('#toastContainer');
-  const toast = document.createElement('div');
-  toast.className = 'toast toast-' + type;
-  const icon = type === 'success' ? '✅' : '❌';
-  toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
-  container.appendChild(toast);
-  setTimeout(() => toast.classList.add('show'), 10);
-  setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
+function showToast(msg, type='success') {
+  const c = $('#toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 4000);
 }
 
 async function api(url, opts={}) {
-  const r = await fetch(url, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(opts.headers||{}) },
-    ...opts
-  });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || 'Erè ' + r.status);
-  return data;
+  const r = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...opts });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Erè');
+  return d;
 }
 
 $('#adminLoginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  try {
-    await api('/api/auth/admin-login', { method: 'POST', body: JSON.stringify({ password: $('#adminPass').value }) });
-    showApp();
-  } catch (err) {
-    const el = $('#loginAlert');
-    el.className = 'alert show alert-error';
-    el.textContent = err.message;
-  }
+  try { await api('/api/auth/admin-login', { method: 'POST', body: JSON.stringify({ password: $('#adminPass').value }) }); showApp(); } 
+  catch (err) { showToast(err.message, 'error'); }
 });
 
 async function showApp() {
   $('#loginView').classList.add('hidden');
   $('#appView').classList.remove('hidden');
-  await Promise.all([loadAffiliates(), loadSales(), loadCustomers(), loadNotifs(), loadAnalytics()]);
-}
-
-async function checkAuth() {
-  try { const me = await api('/api/auth/me'); if (me.role === 'admin') showApp(); } catch {}
+  await Promise.all([loadAffiliates(), loadTasks(), loadCustomers(), loadNotifs(), loadAnalytics()]);
 }
 checkAuth();
-
-const pageTitles = { affiliates: 'Jesyon Afilye', economy: 'Ekonomi ak Vant', customers: 'Lis Kliyan yo', notifications: 'Notifikasyon', analytics: 'Analytik ak Rapò' };
+async function checkAuth() { try { const me = await api('/api/auth/me'); if (me.role === 'admin') showApp(); } catch {} }
 
 $$('.sidebar nav a[data-tab]').forEach(a => {
   a.addEventListener('click', (e) => {
     e.preventDefault();
-    const tab = a.dataset.tab;
     $$('.sidebar nav a[data-tab]').forEach(x => x.classList.remove('active'));
     a.classList.add('active');
-    $('#pageTitle').textContent = pageTitles[tab] || 'Dashboard';
     $$('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('tab-' + a.dataset.tab).classList.add('active');
+    $('#pageTitle').textContent = a.textContent.trim();
   });
 });
 
-$('#logoutBtn').addEventListener('click', async (e) => {
-  e.preventDefault();
-  await api('/api/auth/logout', { method: 'POST' });
-  location.reload();
-});
+$('#logoutBtn').addEventListener('click', async (e) => { e.preventDefault(); await api('/api/auth/logout', { method: 'POST' }); location.reload(); });
 
-// ====== AFILYE ======
 async function loadAffiliates() {
-  try {
-    const list = await api('/api/admin/affiliates');
-    const body = $('#affiliatesBody');
-    const opts = $('#saleAffiliate');
-    const notifOpts = $('#notifTarget');
-    
-    body.innerHTML = list.length ? list.map(a => `
-      <tr>
-        <td><strong>${esc(a.name)}</strong></td>
-        <td>${esc(a.email)}</td>
-        <td>${esc(a.phone)}</td>
-        <td>${esc(a.service)}</td>
-        <td><span class="badge badge-${a.status}">${a.status}</span></td>
-        <td>
-          <div style="display:flex; gap:6px;">
-            ${a.status !== 'active' ? `<button type="button" class="btn btn-sm btn-success btn-status" data-id="${a.id}" data-status="active">Aktive</button>` : ''}
-            ${a.status !== 'suspended' ? `<button type="button" class="btn btn-sm btn-danger btn-status" data-id="${a.id}" data-status="suspended">Sispann</button>` : ''}
-          </div>
-        </td>
-      </tr>
-    `).join('') : '<tr><td colspan="6" class="text-muted text-center">Pa gen afilye</td></tr>';
-
-    opts.innerHTML = '<option value="">-- Chwazi yon afilye --</option>' + list.map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.email)})</option>`).join('');
-    notifOpts.innerHTML = '<option value="all">Tout moun</option>' + list.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
-  } catch (e) { showToast(e.message, 'error'); }
+  const list = await api('/api/admin/affiliates');
+  $('#affiliatesBody').innerHTML = list.map(a => `
+    <tr>
+      <td><strong>${esc(a.name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.referral_code)}</td>
+      <td><span class="badge badge-${a.status}">${a.status}</span></td>
+      <td>${a.status !== 'active' ? `<button class="btn btn-sm btn-success" onclick="setStatus(${a.id},'active')">Aktive</button>` : `<button class="btn btn-sm btn-danger" onclick="setStatus(${a.id},'suspended')">Sispann</button>`}</td>
+    </tr>
+  `).join('');
+  $('#saleAffiliate').innerHTML = '<option value="">-- Chwazi --</option>' + list.map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.referral_code)})</option>`).join('');
+  $('#notifTarget').innerHTML = '<option value="all">Tout moun</option>' + list.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
 }
 
-// SE ISIT LA NOU ITILIZE EVENT DELEGATION POU BOUTON YO
-document.addEventListener('click', async (e) => {
-  const btn = e.target.closest('.btn-status');
-  if (!btn) return;
+async function setStatus(id, status) {
+  try { await api(`/api/admin/affiliates/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }); showToast('Estati chanje!'); loadAffiliates(); }
+  catch (e) { showToast(e.message, 'error'); }
+}
 
-  const id = btn.dataset.id;
-  const status = btn.dataset.status;
-  
-  const originalText = btn.textContent;
-  btn.textContent = 'Tann...';
-  btn.disabled = true;
+async function loadTasks() {
+  const list = await api('/api/admin/tasks');
+  $('#tasksBody').innerHTML = list.map(t => `
+    <tr>
+      <td>${new Date(t.created_at).toLocaleDateString()}</td>
+      <td>${esc(t.affiliate_name)}</td>
+      <td>${esc(t.description)}</td>
+      <td>${t.proof_url ? `<span class="text-muted" style="font-size:0.8rem;">${esc(t.proof_url)}</span>` : '-'}</td>
+      <td><span class="badge badge-${t.status==='approved'?'active':t.status==='rejected'?'suspended':'pending'}">${t.status}</span></td>
+      <td>${t.status==='pending' ? `
+        <button class="btn btn-sm btn-success" onclick="setTaskStatus(${t.id},'approved')">Apwouve</button>
+        <button class="btn btn-sm btn-danger" onclick="setTaskStatus(${t.id},'rejected')">Rejte</button>
+      ` : '-'}</td>
+    </tr>
+  `).join('');
+}
 
-  try {
-    await api('/api/admin/affiliates/' + id + '/status', {
-      method: 'PATCH', body: JSON.stringify({ status })
-    });
-    showToast(status === 'active' ? 'Afilye aktive!' : 'Afilye sispann!', 'success');
-    await loadAffiliates(); // Rechaje lis la
-  } catch (err) {
-    showToast(err.message, 'error');
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
-});
+async function setTaskStatus(id, status) {
+  try { await api(`/api/admin/tasks/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }); showToast('Travay ajou!'); loadTasks(); }
+  catch (e) { showToast(e.message, 'error'); }
+}
+
+async function loadCustomers() {
+  const list = await api('/api/admin/customers');
+  $('#customersBody').innerHTML = list.map(c => `
+    <tr>
+      <td>${new Date(c.created_at).toLocaleDateString()}</td>
+      <td><strong>${esc(c.customer_name)}</strong></td>
+      <td><span class="badge badge-pending">${esc(c.site_source)}</span></td>
+      <td>${esc(c.affiliate_name)} (${esc(c.referral_code || 'N/A')})</td>
+      <td>${Number(c.amount).toFixed(2)} HTG</td>
+      <td style="color:#FFB800;">${Number(c.commission).toFixed(2)} HTG</td>
+    </tr>
+  `).join('');
+}
 
 $('#saleForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -255,106 +201,36 @@ $('#saleForm').addEventListener('submit', async (e) => {
         affiliate_id: parseInt($('#saleAffiliate').value),
         customer_name: $('#saleCustomer').value,
         amount: parseFloat($('#saleAmount').value),
-        service: $('#saleService').value
+        site_source: $('#saleSite').value
       })
     });
-    showToast('Vant anrejistre!', 'success');
+    showToast('Vant anrejistre!');
     e.target.reset();
-    loadSales(); loadCustomers(); loadAnalytics();
-  } catch (err) { showToast(err.message, 'error'); }
-});
-
-// ====== LÒT FONKSYON YO ======
-async function loadSales() {
-  try {
-    const list = await api('/api/admin/sales');
-    const body = $('#salesBody');
-    body.innerHTML = list.length ? list.map(s => `
-      <tr>
-        <td>${new Date(s.created_at).toLocaleDateString('fr-FR')}</td>
-        <td>${esc(s.affiliate_name)}</td>
-        <td>${esc(s.customer_name)}</td>
-        <td>${esc(s.service)}</td>
-        <td>${Number(s.amount).toFixed(2)} HTG</td>
-        <td style="color:#FFB800; font-weight:bold;">${Number(s.commission).toFixed(2)} HTG</td>
-        <td><span class="badge badge-${s.status === 'paid' ? 'paid' : 'pending'}">${s.status}</span></td>
-        <td>${s.status !== 'paid' ? `<button type="button" class="btn btn-sm btn-success btn-paid" data-id="${s.id}">Make Paid</button>` : ''}</td>
-      </tr>
-    `).join('') : '<tr><td colspan="8" class="text-muted text-center">Pa gen vant</td></tr>';
-  } catch (e) { showToast(e.message, 'error'); }
-}
-
-document.addEventListener('click', async (e) => {
-  const btn = e.target.closest('.btn-paid');
-  if (!btn) return;
-  const id = btn.dataset.id;
-  btn.disabled = true;
-  try {
-    await api('/api/admin/sales/' + id + '/status', { method: 'PATCH', body: JSON.stringify({ status: 'paid' }) });
-    showToast('Vant make paid!', 'success');
-    loadSales();
-  } catch (e) { showToast(e.message, 'error'); btn.disabled = false; }
-});
-
-async function loadCustomers() {
-  try {
-    const list = await api('/api/admin/customers');
-    const body = $('#customersBody');
-    body.innerHTML = list.length ? list.map(c => `
-      <tr>
-        <td><strong>${esc(c.customer_name)}</strong></td>
-        <td>${esc(c.service)}</td>
-        <td>${Number(c.amount).toFixed(2)} HTG</td>
-        <td>${esc(c.affiliate_name)}</td>
-        <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
-      </tr>
-    `).join('') : '<tr><td colspan="5" class="text-muted text-center">Pa gen kliyan</td></tr>';
-  } catch (e) { showToast(e.message, 'error'); }
-}
-
-$('#notifForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const target = $('#notifTarget').value;
-  try {
-    const res = await api('/api/admin/notifications', {
-      method: 'POST',
-      body: JSON.stringify({ affiliate_id: target === 'all' ? 'all' : parseInt(target), message: $('#notifMessage').value })
-    });
-    showToast('Mesaj voye bay ' + res.count + ' moun!', 'success');
-    e.target.reset(); loadNotifs();
+    loadCustomers();
   } catch (err) { showToast(err.message, 'error'); }
 });
 
 async function loadNotifs() {
-  try {
-    const list = await api('/api/admin/notifications');
-    const body = $('#notifsBody');
-    body.innerHTML = list.length ? list.map(n => `
-      <tr><td>${new Date(n.created_at).toLocaleString('fr-FR')}</td><td>${esc(n.affiliate_name)}</td><td>${esc(n.message)}</td></tr>
-    `).join('') : '<tr><td colspan="3" class="text-muted text-center">Pa gen notifikasyon</td></tr>';
-  } catch (e) { showToast(e.message, 'error'); }
+  const list = await api('/api/admin/notifications');
+  $('#notifsBody').innerHTML = list.map(n => `<tr><td>${new Date(n.created_at).toLocaleString()}</td><td>${esc(n.affiliate_name)}</td><td>${esc(n.message)}</td></tr>`).join('');
 }
+
+$('#notifForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try { await api('/api/admin/notifications', { method: 'POST', body: JSON.stringify({ affiliate_id: $('#notifTarget').value, message: $('#notifMessage').value }) }); showToast('Mesaj voye!'); e.target.reset(); loadNotifs(); }
+  catch (err) { showToast(err.message, 'error'); }
+});
 
 let chart = null;
 async function loadAnalytics() {
-  try {
-    const data = await api('/api/admin/analytics');
-    $('#analyticsStats').innerHTML = `
-      <div class="stat"><div class="label">Revni Total</div><div class="value">${Number(data.totals.revenue).toFixed(2)} <span style="font-size:1rem;color:#9a9aa5;">HTG</span></div></div>
-      <div class="stat"><div class="label">Komisyon Total</div><div class="value">${Number(data.totals.commission).toFixed(2)} <span style="font-size:1rem;color:#9a9aa5;">HTG</span></div></div>
-      <div class="stat"><div class="label">Total Vant</div><div class="value">${data.totals.sales_count}</div></div>
-      <div class="stat"><div class="label">Afilye Aktif</div><div class="value">${data.counts.active_affiliates} <span style="font-size:1rem;color:#9a9aa5;">/ ${data.counts.affiliates}</span></div></div>
-    `;
-    const labels = data.monthly.map(m => m.month);
-    const vals = data.monthly.map(m => Number(m.total_sales));
-    const ctx = $('#salesChart');
-    if (chart) chart.destroy();
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: { labels, datasets: [{ label: 'Vant (HTG)', data: vals, backgroundColor: 'rgba(255,184,0,0.2)', borderColor: '#FFB800', borderWidth: 3, pointBackgroundColor: '#FF7A00', pointBorderColor: '#fff', pointRadius: 4, fill: true, tension: 0.4 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#9a9aa5' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#9a9aa5' }, grid: { color: 'rgba(255,255,255,0.05)' } } } }
-    });
-  } catch (e) { showToast(e.message, 'error'); }
+  const d = await api('/api/admin/analytics');
+  $('#analyticsStats').innerHTML = `
+    <div class="stat"><div class="label">Revni</div><div class="value">${Number(d.totals.revenue).toFixed(2)}</div></div>
+    <div class="stat"><div class="label">Komisyon</div><div class="value">${Number(d.totals.commission).toFixed(2)}</div></div>
+    <div class="stat"><div class="label">Vant</div><div class="value">${d.totals.sales_count}</div></div>
+  `;
+  if (chart) chart.destroy();
+  chart = new Chart($('#salesChart'), { type: 'line', data: { labels: d.monthly.map(m=>m.month), datasets: [{ data: d.monthly.map(m=>Number(m.total_sales)), borderColor: '#FFB800', fill: true, backgroundColor: 'rgba(255,184,0,0.1)' }] }, options: { responsive: true, maintainAspectRatio: false } });
 }
 
 function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
