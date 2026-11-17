@@ -43,7 +43,7 @@
       <div class="table-wrap"><table><thead><tr><th>Sit</th><th>API Key</th><th>Aksyon</th></tr></thead><tbody id="bPart"></tbody></table></div>
     </div>
     <div id="tab-cust" class="tab-panel"><div class="table-wrap"><table><thead><tr><th>Kliyan</th><th>Sit</th><th>Afilye</th><th>Montan</th></tr></thead><tbody id="bCust"></tbody></table></div></div>
-    <div id="tab-task" class="tab-panel"><div class="table-wrap"><table><thead><tr><th>Afilye</th><th>Prèv</th><th>Estati</th></tr></thead><tbody id="bTask"></tbody></table></div></div>
+    <div id="tab-task" class="tab-panel"><div class="table-wrap"><table><thead><tr><th>Afilye</th><th>Prèv</th><th>Estati</th><th>Aksyon</th></tr></thead><tbody id="bTask"></tbody></table></div></div>
   </main>
 </div>
 <script>
@@ -59,7 +59,8 @@ async function loadPart(){const l=await api('/api/admin/partners');$('#bPart').i
 $('#fPart').onsubmit=async e=>{e.preventDefault();await api('/api/admin/partners',{method:'POST',body:JSON.stringify({name:$('#pName').value})});loadPart();$('#pName').value='';};
 window.delPart=async id=>{await api('/api/admin/partners/'+id,{method:'DELETE'});loadPart();};
 async function loadCust(){const l=await api('/api/admin/customers');$('#bCust').innerHTML=l.map(c=>`<tr><td>${c.customer_name}</td><td><span class="badge badge-pending">${c.site_source}</span></td><td>${c.affiliate_name}</td><td>${Number(c.amount).toFixed(2)} HTG</td></tr>`).join('');}
-async function loadTask(){const l=await api('/api/admin/tasks');$('#bTask').innerHTML=l.map(t=>`<tr><td>${t.affiliate_name}</td><td>${t.proof_url}</td><td>${t.status}</td></tr>`).join('');}
+async function loadTask(){const l=await api('/api/admin/tasks');$('#bTask').innerHTML=l.map(t=>`<tr><td>${t.affiliate_name}</td><td>${t.proof_url}</td><td><span class="badge badge-${t.status==='approved'?'active':'pending'}">${t.status}</span></td><td>${t.status==='pending'?`<button class="btn btn-sm btn-success" onclick="setTask(${t.id},'approved')">Apwouve</button>`:''}</td></tr>`).join('');}
+window.setTask=async(id,s)=>{await api('/api/admin/tasks/'+id+'/status',{method:'PATCH',body:JSON.stringify({status:s})});loadTask();};
 api('/api/auth/me').then(m=>{if(m.role==='admin')showApp();}).catch(()=>{});
 </script>
 </body>
