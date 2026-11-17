@@ -8,7 +8,13 @@ router.post('/register', async (req, res) => {
   try {
     let { name, email, phone, service, password } = req.body;
     email = String(email).toLowerCase().trim();
-    if (await db.query('SELECT id FROM affiliates WHERE email=$1', [email])).rows.length) return res.status(409).json({ error: 'Imèl deja itilize' });
+
+    // KORIJE: Separe rekèt la ak kondisyon an pou l pi klè epi san erè
+    const existing = await db.query('SELECT id FROM affiliates WHERE email=$1', [email]);
+    if (existing.rows.length) {
+      return res.status(409).json({ error: 'Imèl deja itilize' });
+    }
+
     const hash = await bcrypt.hash(password, 10);
     const r = await db.query(`INSERT INTO affiliates (name,email,phone,service,password_hash) VALUES ($1,$2,$3,$4,$5) RETURNING id`, [name, email, phone, service, hash]);
     await db.query(`UPDATE affiliates SET referral_code = 'OGSUN-' || LPAD(id::text, 4, '0') WHERE id = $1`, [r.rows[0].id]);
