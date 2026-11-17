@@ -10,6 +10,7 @@
   .sidebar nav a { display: flex; align-items: center; gap: 10px; }
   .nav-icon { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; }
   .code-box { background: #000; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 0.75rem; color: #30d158; word-break: break-all; }
+  .proof-link { color: #FFB800; text-decoration: underline; font-size: 0.85rem; }
   @media (max-width: 900px) { .sidebar nav { flex-wrap: wrap; } .sidebar nav a { flex: 1 1 auto; justify-content: center; font-size: 0.8rem; } }
 </style>
 </head>
@@ -38,14 +39,26 @@
   <main class="main-content">
     <div class="top-bar"><h1 id="title">Afilye</h1></div>
     <div id="tab-aff" class="tab-panel active"><div class="table-wrap"><table><thead><tr><th>Non</th><th>Imèl</th><th>Kòd</th><th>Estati</th><th>Aksyon</th></tr></thead><tbody id="bAff"></tbody></table></div></div>
+    
     <div id="tab-part" class="tab-panel">
       <div class="card mb-3"><form id="fPart" style="display:flex; gap:10px;"><input type="text" id="pName" placeholder="Non sit" required style="flex:1; padding:10px;"><button class="btn btn-primary">Kreye API Key</button></form></div>
       <div class="table-wrap"><table><thead><tr><th>Sit</th><th>API Key</th><th>Aksyon</th></tr></thead><tbody id="bPart"></tbody></table></div>
     </div>
+    
     <div id="tab-cust" class="tab-panel"><div class="table-wrap"><table><thead><tr><th>Kliyan</th><th>Sit</th><th>Afilye</th><th>Montan</th></tr></thead><tbody id="bCust"></tbody></table></div></div>
-    <div id="tab-task" class="tab-panel"><div class="table-wrap"><table><thead><tr><th>Afilye</th><th>Prèv</th><th>Estati</th><th>Aksyon</th></tr></thead><tbody id="bTask"></tbody></table></div></div>
+    
+    <!-- TAB TRAVAY AK KONTWÒL STRIK -->
+    <div id="tab-task" class="tab-panel">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dat</th><th>Afilye</th><th>Travay</th><th>Prèv (Klike pou verifye)</th><th>Estati</th><th>Aksyon</th></tr></thead>
+          <tbody id="bTask"></tbody>
+        </table>
+      </div>
+    </div>
   </main>
 </div>
+
 <script>
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 async function api(u,o={}){const r=await fetch(u,{...o,headers:{'Content-Type':'application/json'}});if(!r.ok)throw new Error((await r.json()).error||'Erè');return r.json();}
@@ -53,14 +66,37 @@ $('#loginForm').onsubmit=async e=>{e.preventDefault();try{await api('/api/auth/a
 async function showApp(){$('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');loadAff();loadPart();loadCust();loadTask();}
 $$('.sidebar nav a[data-tab]').forEach(a=>a.onclick=e=>{e.preventDefault();$$('.sidebar nav a[data-tab]').forEach(x=>x.classList.remove('active'));a.classList.add('active');$$('.tab-panel').forEach(p=>p.classList.remove('active'));$('#tab-'+a.dataset.tab).classList.add('active');$('#title').textContent=a.textContent.trim();});
 $('#logout').onclick=()=>{api('/api/auth/logout',{method:'POST'}).then(()=>location.reload());};
+
 async function loadAff(){const l=await api('/api/admin/affiliates');$('#bAff').innerHTML=l.map(a=>`<tr><td>${a.name}</td><td>${a.email}</td><td>${a.referral_code}</td><td><span class="badge badge-${a.status}">${a.status}</span></td><td><button class="btn btn-sm ${a.status==='active'?'btn-danger':'btn-success'}" onclick="setStat(${a.id},'${a.status==='active'?'suspended':'active'}')">${a.status==='active'?'Sispann':'Aktive'}</button></td></tr>`).join('');}
 window.setStat=async(id,s)=>{await api('/api/admin/affiliates/'+id+'/status',{method:'PATCH',body:JSON.stringify({status:s})});loadAff();};
+
 async function loadPart(){const l=await api('/api/admin/partners');$('#bPart').innerHTML=l.map(p=>`<tr><td>${p.name}</td><td><div class="code-box">${p.api_key}</div></td><td><button class="btn btn-sm btn-danger" onclick="delPart(${p.id})">Efase</button></td></tr>`).join('');}
 $('#fPart').onsubmit=async e=>{e.preventDefault();await api('/api/admin/partners',{method:'POST',body:JSON.stringify({name:$('#pName').value})});loadPart();$('#pName').value='';};
 window.delPart=async id=>{await api('/api/admin/partners/'+id,{method:'DELETE'});loadPart();};
+
 async function loadCust(){const l=await api('/api/admin/customers');$('#bCust').innerHTML=l.map(c=>`<tr><td>${c.customer_name}</td><td><span class="badge badge-pending">${c.site_source}</span></td><td>${c.affiliate_name}</td><td>${Number(c.amount).toFixed(2)} HTG</td></tr>`).join('');}
-async function loadTask(){const l=await api('/api/admin/tasks');$('#bTask').innerHTML=l.map(t=>`<tr><td>${t.affiliate_name}</td><td>${t.proof_url}</td><td><span class="badge badge-${t.status==='approved'?'active':'pending'}">${t.status}</span></td><td>${t.status==='pending'?`<button class="btn btn-sm btn-success" onclick="setTask(${t.id},'approved')">Apwouve</button>`:''}</td></tr>`).join('');}
+
+// VERIFIKASYON TRAVAY
+async function loadTask(){
+  const l=await api('/api/admin/tasks');
+  $('#bTask').innerHTML=l.map(t=>`
+    <tr>
+      <td>${new Date(t.created_at).toLocaleDateString()}</td>
+      <td><strong>${t.affiliate_name}</strong></td>
+      <td>${t.description}</td>
+      <td><a href="${t.proof_url}" target="_blank" class="proof-link">Wè Prèv la</a></td>
+      <td><span class="badge badge-${t.status==='approved'?'active':t.status==='rejected'?'suspended':'pending'}">${t.status}</span></td>
+      <td>
+        ${t.status==='pending'?`
+          <button class="btn btn-sm btn-success" onclick="setTask(${t.id},'approved')">Apwouve</button>
+          <button class="btn btn-sm btn-danger" onclick="setTask(${t.id},'rejected')">Rejte</button>
+        `:'Fini'}
+      </td>
+    </tr>
+  `).join('');
+}
 window.setTask=async(id,s)=>{await api('/api/admin/tasks/'+id+'/status',{method:'PATCH',body:JSON.stringify({status:s})});loadTask();};
+
 api('/api/auth/me').then(m=>{if(m.role==='admin')showApp();}).catch(()=>{});
 </script>
 </body>

@@ -10,6 +10,10 @@
   .nav-icon { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; }
   .link-box { display: flex; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; align-items: center; gap: 10px; }
   .link-box input { flex: 1; background: transparent; border: none; color: #FFB800; font-family: monospace; outline: none; }
+  .mission-card { background: #121216; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; margin-bottom: 12px; transition: 0.2s; }
+  .mission-card:hover { border-color: rgba(255,184,0,0.3); }
+  .mission-title { font-size: 1rem; font-weight: bold; color: #fff; margin-bottom: 8px; }
+  .mission-desc { font-size: 0.85rem; color: #9a9aa5; margin-bottom: 12px; }
   @media (max-width: 900px) { .sidebar nav { flex-wrap: wrap; } .sidebar nav a { flex: 1 1 auto; justify-content: center; font-size: 0.8rem; } }
 </style>
 </head>
@@ -43,9 +47,14 @@
       <div class="stats-grid" id="stats"></div>
       <div class="table-wrap"><table><thead><tr><th>Kliyan</th><th>Sit</th><th>Montan</th><th>Komisyon</th></tr></thead><tbody id="bCust"></tbody></table></div>
     </div>
+    
     <div id="tab-miss" class="tab-panel">
-      <div class="top-bar"><h1>Gwo Misyon</h1></div>
-      <div class="card mb-3"><h3>Pataje lyen sou WhatsApp</h3><form onsubmit="submitTask(event,'WhatsApp')"><input type="text" name="proof" placeholder="Prèv ou..." required style="width:100%;padding:10px;margin-bottom:10px;"><button class="btn btn-primary">Soumèt</button></form></div>
+      <div class="top-bar"><h1>20 Gwo Misyon Maketing</h1></div>
+      <p style="color:#9a9aa5; margin-bottom:20px; font-size:0.9rem;">Fè tach sa yo epi soumèt prèv pwofesyonèl (lyen TikTok, lyen Facebook, oswa screenshot Imgur). Admin ap verifye yo yon pa yon.</p>
+      
+      <div id="missionsContainer" style="display:grid; grid-template-columns:1fr; gap:12px;"></div>
+
+      <h3 style="margin-top:30px; margin-bottom:15px;">Istwa Soumèt Mwen</h3>
       <div id="bTask"></div>
     </div>
   </main>
@@ -54,30 +63,76 @@
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 async function api(u,o={}){const r=await fetch(u,{...o,headers:{'Content-Type':'application/json'}});if(!r.ok)throw new Error((await r.json()).error||'Erè');return r.json();}
 $('#loginForm').onsubmit=async e=>{e.preventDefault();try{await api('/api/auth/login',{method:'POST',body:JSON.stringify({email:$('#email').value,password:$('#pass').value})});showApp();}catch(err){alert(err.message);}};
-async function showApp(){$('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');loadData();loadTasks();}
+async function showApp(){$('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');loadData();loadTasks();renderMissions();}
 $$('.sidebar nav a[data-tab]').forEach(a=>a.onclick=e=>{e.preventDefault();$$('.sidebar nav a[data-tab]').forEach(x=>x.classList.remove('active'));a.classList.add('active');$$('.tab-panel').forEach(p=>p.classList.remove('active'));$('#tab-'+a.dataset.tab).classList.add('active');});
 $('#logout').onclick=()=>{api('/api/auth/logout',{method:'POST'}).then(()=>location.reload());};
-function copyLink(){
-  const txt = $('#link').value;
-  if(!txt) return alert('Pa gen lyen');
-  if(navigator.clipboard && window.isSecureContext){
-    navigator.clipboard.writeText(txt).then(()=>alert('✅ Kopye!')).catch(()=>fallbackCopy(txt));
-  } else { fallbackCopy(txt); }
-}
-function fallbackCopy(txt){
-  const t=document.createElement("textarea"); t.value=txt; t.style.position="fixed"; t.style.opacity="0";
-  document.body.appendChild(t); t.focus(); t.select();
-  try{document.execCommand('copy'); alert('✅ Kopye!');} catch(e){alert('Erè. Kopye manyèlman: '+txt);}
-  document.body.removeChild(t);
-}
+function copyLink(){const txt=$('#link').value;if(!txt)return;navigator.clipboard.writeText(txt).then(()=>alert('✅ Kopye!')).catch(()=>fallbackCopy(txt));}
+function fallbackCopy(txt){const t=document.createElement("textarea");t.value=txt;t.style.position="fixed";t.style.opacity="0";document.body.appendChild(t);t.focus();t.select();document.execCommand('copy');alert('✅ Kopye!');document.body.removeChild(t);}
 async function loadData(){
   const me = await api('/api/affiliate/me'); $('#link').value = me.tracking_link;
   const d = await api('/api/affiliate/portfolio');
   $('#stats').innerHTML = `<div class="stat"><div class="label">Vant Total</div><div class="value">${Number(d.stats.total_sales||0).toFixed(2)} HTG</div></div><div class="stat"><div class="label">Komisyon</div><div class="value">${Number(d.stats.total_commission||0).toFixed(2)} HTG</div></div>`;
   $('#bCust').innerHTML = d.customers.map(c=>`<tr><td>${c.customer_name}</td><td><span class="badge badge-pending">${c.site_source}</span></td><td>${Number(c.amount).toFixed(2)}</td><td>${Number(c.commission).toFixed(2)}</td></tr>`).join('');
 }
-window.submitTask=async(e,name)=>{e.preventDefault();await api('/api/tasks',{method:'POST',body:JSON.stringify({description:name,proof_url:e.target.proof.value})});alert('Soumèt!');loadTasks();e.target.reset();};
-async function loadTasks(){const l=await api('/api/tasks');$('#bTask').innerHTML=l.map(t=>`<div class="card mb-2"><strong>${t.description}</strong><br>Prèv: ${t.proof_url}<br><span class="badge badge-${t.status==='approved'?'active':'pending'}">${t.status}</span></div>`).join('');}
+
+// --- 20 TACH YO ---
+const missions = [
+  { title: "1. Pataje lyen w sou WhatsApp Status", desc: "Mete lyen w ak yon bèl imaj sou status WhatsApp ou." },
+  { title: "2. Fè yon TikTok pou OGCARS", desc: "Kreye yon videyo kout k ap montre bèl machin yo." },
+  { title: "3. Pataje nan 3 gwoup Facebook", desc: "Pataje lyen an nan gwoup kote moun achte bagay." },
+  { title: "4. Voye 5 mesaj dirèk (DM) bay zanmi", desc: "Pale ak 5 moun ou konnen sou sit la." },
+  { title: "5. Fè yon pòs sou paj Facebook w", desc: "Ekri yon bèl tèks k ap atire kliyan yo." },
+  { title: "6. Pataje nan yon gwoup WhatsApp", desc: "Pataje lyen an nan yon gwoup fanmi oswa zanmi." },
+  { title: "7. Kreye yon Story Instagram", desc: "Mete lyen w sou Story IG ou." },
+  { title: "8. Kòmante sou 5 pòs popilè", desc: "Kite yon kòmantè sou paj ki gen anpil moun." },
+  { title: "9. Rekòmande sit la bay yon machann", desc: "Pale ak yon machann pou l achte sou sit la." },
+  { title: "10. Fè yon videyo pou Order Food", desc: "Montre bèl manje ou ka kòmande a." },
+  { title: "11. Pataje sou Twitter (X)", desc: "Fè yon tweet ak lyen w." },
+  { title: "12. Voye yon mesaj nan yon gwoup Telegram", desc: "Pataje lyen an nan yon gwoup aktif." },
+  { title: "13. Fè yon pòs ak screenshot sit la", desc: "Pran yon screenshot epi pataje l." },
+  { title: "14. Pale ak 3 kliyan potansyèl", desc: "Eseye konvenk 3 moun pou yo achte." },
+  { title: "15. Pataje nan yon forum Ayisyen", desc: "Mete lyen an kote moun ap diskite." },
+  { title: "16. Fè yon TikTok pou Shop Online", desc: "Montre pwodwi ki sou sit la." },
+  { title: "17. Kreye yon pòs sou LinkedIn", desc: "Pataje opòtinite a ak pwofesyonèl." },
+  { title: "18. Kòmante anba yon TikTok popilè", desc: "Kite lyen w nan kòmantè yo." },
+  { title: "19. Voye yon imèl bay 5 moun", desc: "Ekri yon bèl imèl k ap envite yo achte." },
+  { title: "20. Fè yon pòs sou paj biznis ou", desc: "Pataje lyen an si w gen yon paj biznis." }
+];
+
+function renderMissions() {
+  $('#missionsContainer').innerHTML = missions.map((m, i) => `
+    <div class="mission-card">
+      <div class="mission-title">${m.title}</div>
+      <div class="mission-desc">${m.desc}</div>
+      <form onsubmit="submitTask(event, '${m.title}')" style="display:flex; gap:8px;">
+        <input type="text" name="proof" placeholder="Kole yon lyen prèv (tankou: https://imgur.com/...)" required style="flex:1; padding:10px; background:#08080a; border:1px solid #333; border-radius:8px; color:#fff; font-size:0.85rem;">
+        <button type="submit" class="btn btn-primary btn-sm">Soumèt Prèv</button>
+      </form>
+    </div>
+  `).join('');
+}
+
+window.submitTask=async(e,name)=>{
+  e.preventDefault();
+  const proof = e.target.proof.value;
+  try {
+    await api('/api/tasks',{method:'POST',body:JSON.stringify({description:name,proof_url:proof})});
+    alert('✅ Prèv ou soumèt! Tann Admin lan ap verifye l.');
+    e.target.reset();
+    loadTasks();
+  } catch(err) { alert(err.message); }
+};
+
+async function loadTasks(){
+  const l=await api('/api/tasks');
+  $('#bTask').innerHTML=l.map(t=>`
+    <div class="card mb-2" style="background:#121216; padding:12px; border-radius:8px;">
+      <div style="font-weight:bold; color:#fff;">${t.description}</div>
+      <div style="font-size:0.85rem; color:#9a9aa5; margin:5px 0;">Prèv: <a href="${t.proof_url}" target="_blank" style="color:#FFB800;">${t.proof_url}</a></div>
+      <span class="badge badge-${t.status==='approved'?'active':t.status==='rejected'?'suspended':'pending'}">${t.status}</span>
+    </div>
+  `).join('');
+}
 api('/api/auth/me').then(m=>{if(m.role==='affiliate')showApp();}).catch(()=>{});
 </script>
 </body>
